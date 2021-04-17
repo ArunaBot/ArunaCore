@@ -1,0 +1,31 @@
+{
+  "name": "arunacore",
+  "version": "1.0.0",
+  "description": "The Core for ArunaModule Base programs",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ArunaBot/ArunaCore.git"
+  },
+  "author": "LoboMetalurgico",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/ArunaBot/ArunaCore/issues"
+  },
+  "homepage": "https://github.com/ArunaBot/ArunaCore#readme",
+  "engines": {
+    "node": ">=0.12"
+  },
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "semver": "^7.3.5",
+    "yaml": "^1.10.2"
+  },
+  "devDependencies": {
+    "eslint": "^7.24.0"
+  }
+}
