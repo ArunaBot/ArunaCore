@@ -15,6 +15,11 @@
     along with ArunaCore.  If not, see <https://www.gnu.org/licenses/>
 */
 
+/**
+ * @author @TwitchApis
+ * This file is based on @TwitchApis logger.
+ */
+
 const path = require('path');
 var chalk = require('chalk');
 var dateParser = require(path.resolve(__dirname,'DateParser'));

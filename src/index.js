@@ -28,22 +28,29 @@ class Main extends EventEmitter {
         logger = new LoggerC({ debug: true, prefix: 'CORE' });
     }
 
-    start() {
+    async start() {
         logger.debug('Hello World!');
         args = process.argv.slice(2);
 
-        if (args) {
+        if (args[0]) {
             switch (args[0]) {
                 case 'installer':
                 case 'install':
                     break;
                 default:
+                    logger.error('Oops...');
+                    logger.debug(args);
                     break;
             }
             return;
         }
 
-        const loader = new ModuleLoader();
+        const loader = new ModuleLoader(logger);
+
+        await loader.load(path.resolve(__dirname,'modules'), function(err, results) {
+            if (err) throw err;
+            console.log(results);
+        });
     }
 }
 
