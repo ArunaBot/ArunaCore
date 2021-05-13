@@ -47,7 +47,7 @@ class logger {
     }
 
     info(Message) {
-        console.info(chalk.blueBright(`[${dateParser.getTime()}] [${this.prefix}]`) + `Info: ${Message}`);
+        console.info(chalk.blueBright(`[${dateParser.getTime()}] [${this.prefix}] `) + `Info: ${Message}`);
     }
 
     debug(Message) {
