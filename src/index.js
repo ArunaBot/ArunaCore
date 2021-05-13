@@ -15,9 +15,10 @@
     along with ArunaCore.  If not, see <https://www.gnu.org/licenses/>
 */
 
+const fs = require('fs');
 const path = require('path');
 const EventEmitter = require('events');
-const { logger: LoggerC, ModuleLoader } = require(path.resolve(__dirname,'Utils'));
+const { logger: LoggerC, ModuleLoader, ModuleParser } = require(path.resolve(__dirname,'Utils'));
 
 var logger;
 var args;
@@ -46,10 +47,37 @@ class Main extends EventEmitter {
         }
 
         const loader = new ModuleLoader(logger);
+        var parser;
 
-        await loader.load(path.resolve(__dirname,'modules'), function(err, results) {
+        await loader.load(path.resolve(__dirname,'modules'), async function(err, results) {
             if (err) throw err;
             console.log(results);
+            var moduleList;
+
+            await results.forEach((element, index) => {
+                if (element.includes('.moduleList')) {
+                    results.splice(index, 1);
+                    return moduleList = element;
+                }
+            });
+
+            if (!moduleList) {
+                logger.debug('Here');
+                moduleList = path.resolve(__dirname,'modules', '.moduleList');
+                try {
+                    fs.writeFileSync(moduleList, '{}', { flag: 'a+', encoding: 'utf8' });
+                } finally {
+                    logger.info(`".moduleList" file created in '${moduleList.replace('.moduleList', '')}'.`);
+                }
+                
+            }
+
+            parser = new ModuleParser(logger, moduleList);
+
+            const installedModules = await parser.getInstalledModules();
+
+            logger.debug(`Installed Modules: ${JSON.stringify(installedModules)}.`);
+            logger.debug(`All Modules (DIR): ${JSON.stringify(results)}.`);
         });
     }
 }
