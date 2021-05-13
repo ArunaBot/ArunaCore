@@ -2,9 +2,9 @@
   "name": "arunacore",
   "version": "1.0.0",
   "description": "The Core for ArunaModule Base programs",
-  "main": "src/index.js",
+  "main": "src/main/index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node src/main/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
