@@ -54,6 +54,10 @@ class logger {
         console.info(chalk.blueBright(`[${dateParser.getTime()}] [${this.prefix}] `) + `Info: ${Message}`);
     }
 
+    log(Message) {
+        this.info(Message);
+    }
+
     debug(Message) {
         if (this.debugActive) {
             if (typeof Message === 'object') Message = JSON.stringify(Message);
