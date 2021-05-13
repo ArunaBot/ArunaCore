@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const pkgJG = require('./packageJsonGenerator');
 
 class ModuleLoader {
     constructor(logger) {
@@ -9,7 +10,7 @@ class ModuleLoader {
     }
 
     async load(dir, done) {
-        this.logger.debug('Initializing Load...');
+        this.logger.info('Initializing Load...');
         var walk = async function(dir, done) {
             var results = [];
             fs.readdir(dir, function(err, list) {
@@ -25,7 +26,11 @@ class ModuleLoader {
                                 if (!--pending) done(null, results);
                             });
                         } else {
-                            if (file.includes('.arunamodule') || file.includes('.moduleList')) {
+                            if (
+                                file.includes('.arunamodule') ||
+                                file.includes('package.json') ||
+                                file.includes('.moduleList')
+                            ) {
                                 results.push(file);
                             }
                             if (!--pending) done(null, results);
@@ -37,8 +42,10 @@ class ModuleLoader {
         return await walk(dir, done);
     }
 
-    install(module) {
-
+    async install(module) {
+        this.logger.info(`Installing Module: ${module}...`);
+        return false;
+        // await new pkgJG().gen(module);
     }
 }
 

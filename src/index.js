@@ -31,6 +31,7 @@ class Main extends EventEmitter {
 
     async start() {
         logger.debug('Hello World!');
+        logger.info('Starting Core Initialization...');
         args = process.argv.slice(2);
 
         if (args[0]) {
@@ -78,6 +79,16 @@ class Main extends EventEmitter {
 
             logger.debug(`Installed Modules: ${JSON.stringify(installedModules)}.`);
             logger.debug(`All Modules (DIR): ${JSON.stringify(results)}.`);
+
+            results = results.filter((element) => !installedModules.includes(element));
+
+            logger.debug(`Non Installed Modules: ${JSON.stringify(results)}.`);
+
+            await results.forEach(async (element) => {
+                await loader.install(element);
+            });
+
+            logger.info('Getting Enabled Modules and Finishing Core Initialization...');
         });
     }
 }
