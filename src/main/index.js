@@ -57,8 +57,6 @@ class Main extends EventEmitter {
             logger.fatal(err);
         });
 
-        console.log(load);
-
         load.forEach((element, index) => {
             if (element.includes('.moduleList')) {
                 load.splice(index, 1);
@@ -67,7 +65,6 @@ class Main extends EventEmitter {
         });
 
         if (!moduleList) {
-            logger.debug('Here');
             moduleList = path.resolve(__dirname,'modules', '.moduleList');
             try {
                 fs.writeFileSync(moduleList, '{}', { flag: 'a+', encoding: 'utf8' });
@@ -88,17 +85,27 @@ class Main extends EventEmitter {
 
         logger.debug(`Non Installed Modules: ${JSON.stringify(load)}.`);
 
-        for (var i = 0; i <= load.length; i++) {
-            var element = load[i];
-            // eslint-disable-next-line no-await-in-loop
-            await loader.install(element).then(() => {
-                load.splice(i, 1);
-                toLoad.push(element);
-            }).catch(() => {
-                logger.error(`Unable to install the module present in the '${element.replace('.arunamodule', '')}' directory, skipping ...`);
-            });
+        if (load.length > 0) {
+            for (var i = 0; i <= load.length; i++) {
+                var element = load[i];
+
+                if (!element) return;
+
+                // eslint-disable-next-line no-await-in-loop
+                await loader.install(element, moduleList).then(() => {
+                    load.splice(i, 1);
+                    toLoad.push(element);
+                }).catch(() => {
+                    logger.error(`Unable to install the module present in the '${element.replace('.arunamodule', '')}' directory, skipping ...`);
+                });
+            }
         }
         
+        if (toLoad.length == 0) {
+            logger.error('No Modules to Load! Shutting Down...');
+            return process.exit(-1);
+        }
+
         logger.info('Getting Enabled Modules and Finishing Core Initialization...');
     }
 }

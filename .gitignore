@@ -103,8 +103,8 @@ dist
 # TernJS port file
 .tern-port
 
-# ArunaCore Module Folder Content
+# ArunaCore Module Folder
 modules/
 
-# ArunaCore Auto Generated files
+# ArunaCore Auto Generated Content
 *.moduleList
