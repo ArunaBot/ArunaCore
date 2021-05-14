@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const ModuleParser = require('./moduleParser');
 const pkgJG = require('./packageJsonGenerator');
 
 class ModuleLoader {
@@ -42,10 +43,22 @@ class ModuleLoader {
         return await walk(dir, done);
     }
 
-    async install(module) {
-        this.logger.info(`Installing Module: ${module}...`);
-        return false;
-        // await new pkgJG().gen(module);
+    async install(moduleDir) {
+        const parser = new ModuleParser(this.logger);
+        // eslint-disable-next-line no-async-promise-executor
+        return new Promise((resolve, reject) => {
+            parser.parser(moduleDir)
+                .then((aModule) => {
+                    this.logger.info(`Installing Module: ${aModule.name}...`);
+                    // await new pkgJG().gen(module);
+                    // reject('Not Implemented!');
+                    resolve(moduleDir);
+                })
+                .catch((err) => {
+                    this.logger.error(err);
+                    return reject(err);
+                });
+        });
     }
 }
 

@@ -48,7 +48,7 @@ class Main extends EventEmitter {
         }
 
         const loader = new ModuleLoader(logger);
-        var parser;
+        const parser = new ModuleParser(logger);
 
         await loader.load(path.resolve(__dirname,'modules'), async function(err, results) {
             if (err) throw err;
@@ -73,19 +73,24 @@ class Main extends EventEmitter {
                 
             }
 
-            parser = new ModuleParser(logger, moduleList);
-
-            const installedModules = await parser.getInstalledModules();
+            const installedModules = await parser.getInstalledModules(moduleList);
 
             logger.debug(`Installed Modules: ${JSON.stringify(installedModules)}.`);
             logger.debug(`All Modules (DIR): ${JSON.stringify(results)}.`);
+
+            var toLoad = installedModules;
 
             results = results.filter((element) => !installedModules.includes(element));
 
             logger.debug(`Non Installed Modules: ${JSON.stringify(results)}.`);
 
-            await results.forEach(async (element) => {
-                await loader.install(element);
+            await results.forEach(async (element, index) => {
+                await loader.install(element).then(() => {
+                    results.splice(index, 1);
+                    toLoad.push(element);
+                }).catch(() => {
+                    logger.error(`Unable to install the module present in the '${element.replace('.arunamodule', '')}' directory, skipping ...`);
+                });
             });
 
             logger.info('Getting Enabled Modules and Finishing Core Initialization...');

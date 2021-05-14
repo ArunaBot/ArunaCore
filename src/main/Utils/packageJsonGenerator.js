@@ -2,8 +2,10 @@ class PackageJsonGenerator {
     constructor () {
     }
 
-    async gen(modulePath) {
-        var packageJson = {};
+    gen(object, dir) {
+        return new Promise((resolve, reject) => {
+            
+        });    
     }
 }
 
