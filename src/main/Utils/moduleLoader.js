@@ -10,37 +10,45 @@ class ModuleLoader {
         this.logger = logger;
     }
 
-    async load(dir, done) {
+    async load(dir) {
         this.logger.info('Initializing Load...');
-        var walk = async function(dir, done) {
-            var results = [];
-            fs.readdir(dir, function(err, list) {
-                if (err) return done(err);
-                var pending = list.length;
-                if (!pending) return done(null, results);
-                list.forEach(function(file) {
-                    file = path.resolve(dir, file);
-                    fs.stat(file, function(err, stat) {
-                        if (stat && stat.isDirectory()) {
-                            walk(file, function(err, res) {
-                                results = results.concat(res);
-                                if (!--pending) done(null, results);
-                            });
-                        } else {
-                            if (
-                                file.includes('.arunamodule') ||
+        // eslint-disable-next-line no-async-promise-executor
+        return new Promise(async (resolve, reject) => {
+            var walk = async function(dir, done) {
+                var results = [];
+                fs.readdir(dir, function(err, list) {
+                    if (err) return done(err);
+                    var pending = list.length;
+                    if (!pending) return done(null, results);
+                    list.forEach(function(file) {
+                        file = path.resolve(dir, file);
+                        fs.stat(file, function(err, stat) {
+                            if (stat && stat.isDirectory()) {
+                                walk(file, function(err, res) {
+                                    results = results.concat(res);
+                                    if (!--pending) done(null, results);
+                                });
+                            } else {
+                                if (
+                                    file.includes('.arunamodule') ||
                                 file.includes('package.json') ||
                                 file.includes('.moduleList')
-                            ) {
-                                results.push(file);
+                                ) {
+                                    results.push(file);
+                                }
+                                if (!--pending) done(null, results);
                             }
-                            if (!--pending) done(null, results);
-                        }
+                        });
                     });
                 });
+            };
+
+            await walk(dir, function (err, results) {
+                if (err) return reject(err);
+                
+                return resolve(results);
             });
-        };
-        return await walk(dir, done);
+        });
     }
 
     async install(moduleDir) {

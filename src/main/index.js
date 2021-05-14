@@ -49,52 +49,57 @@ class Main extends EventEmitter {
 
         const loader = new ModuleLoader(logger);
         const parser = new ModuleParser(logger);
+        
+        var moduleList;
 
-        await loader.load(path.resolve(__dirname,'modules'), async function(err, results) {
-            if (err) throw err;
-            console.log(results);
-            var moduleList;
-
-            await results.forEach((element, index) => {
-                if (element.includes('.moduleList')) {
-                    results.splice(index, 1);
-                    return moduleList = element;
-                }
-            });
-
-            if (!moduleList) {
-                logger.debug('Here');
-                moduleList = path.resolve(__dirname,'modules', '.moduleList');
-                try {
-                    fs.writeFileSync(moduleList, '{}', { flag: 'a+', encoding: 'utf8' });
-                } finally {
-                    logger.info(`".moduleList" file created in '${moduleList.replace('.moduleList', '')}'.`);
-                }
-                
-            }
-
-            const installedModules = await parser.getInstalledModules(moduleList);
-
-            logger.debug(`Installed Modules: ${JSON.stringify(installedModules)}.`);
-            logger.debug(`All Modules (DIR): ${JSON.stringify(results)}.`);
-
-            var toLoad = installedModules;
-
-            results = results.filter((element) => !installedModules.includes(element));
-
-            logger.debug(`Non Installed Modules: ${JSON.stringify(results)}.`);
-
-            await results.forEach(async (element, index) => {
-                await loader.install(element).then(() => {
-                    results.splice(index, 1);
-                    toLoad.push(element);
-                }).catch(() => {
-                    logger.error(`Unable to install the module present in the '${element.replace('.arunamodule', '')}' directory, skipping ...`);
-                });
-            });
-
-            logger.info('Getting Enabled Modules and Finishing Core Initialization...');
+        var load = await loader.load(path.resolve(__dirname,'modules')).catch((err) => {
+            logger.error('Fail on load modules!');
+            logger.fatal(err);
         });
+
+        console.log(load);
+
+        load.forEach((element, index) => {
+            if (element.includes('.moduleList')) {
+                load.splice(index, 1);
+                return moduleList = element;
+            }
+        });
+
+        if (!moduleList) {
+            logger.debug('Here');
+            moduleList = path.resolve(__dirname,'modules', '.moduleList');
+            try {
+                fs.writeFileSync(moduleList, '{}', { flag: 'a+', encoding: 'utf8' });
+            } finally {
+                logger.info(`".moduleList" file created in '${moduleList.replace('.moduleList', '')}'.`);
+            }
+                
+        }
+
+        const installedModules = await parser.getInstalledModules(moduleList);
+
+        logger.debug(`Installed Modules: ${JSON.stringify(installedModules)}.`);
+        logger.debug(`All Modules (DIR): ${JSON.stringify(load)}.`);
+
+        var toLoad = installedModules;
+
+        load = load.filter((element) => !installedModules.includes(element));
+
+        logger.debug(`Non Installed Modules: ${JSON.stringify(load)}.`);
+
+        for (var i = 0; i <= load.length; i++) {
+            var element = load[i];
+            // eslint-disable-next-line no-await-in-loop
+            await loader.install(element).then(() => {
+                load.splice(i, 1);
+                toLoad.push(element);
+            }).catch(() => {
+                logger.error(`Unable to install the module present in the '${element.replace('.arunamodule', '')}' directory, skipping ...`);
+            });
+        }
+        
+        logger.info('Getting Enabled Modules and Finishing Core Initialization...');
     }
 }
 
