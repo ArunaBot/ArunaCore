@@ -3,6 +3,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 const ModuleParser = require('./moduleParser');
 const pkgJG = require('./packageJsonGenerator');
+const pkg = require(path.resolve(__dirname, '..', '..', '..', 'package.json'));
 
 class ModuleLoader {
     constructor(logger) {
@@ -54,6 +55,13 @@ class ModuleLoader {
             parser.parser(moduleDir)
                 .then(async (aModule) => {
                     this.logger.info(`Installing Module: ${aModule.name}...`);
+
+                    if (aModule.requireCore > parseFloat(pkg.version)) {
+                        const ver = `The ${aModule.name} module requires a higher version of the core (${aModule.requireCore}+). Please update your ArunaCore to run this module.`;
+                        this.logger.error(ver);
+                        return reject(ver);
+                    }
+
                     var dependencies = '';
                     var devDependencies = '';
 

@@ -41,7 +41,7 @@ class ModuleParser {
                 finalObj.repository = obj.moduleInfo.repository;
 
                 if (obj.moduleInfo.engines.core) {
-                    finalObj.requireCore = obj.moduleInfo.engines.core;
+                    finalObj.requireCore = parseFloat(obj.moduleInfo.engines.core.replace('>', '').replace('=', '').replace('<', '')); /** @todo: parse correct version specifications */
                     delete obj.moduleInfo.engines.core;
                 }
 
