@@ -15,8 +15,7 @@ class PackageJsonGenerator {
             } catch {
 
             } finally {
-                if (object.requireCore) delete object.requireCore;
-                await fs.writeFileSync(dir + 'package.json', JSON.stringify(object), { flag: 'a+', encoding: 'utf8' });
+                fs.writeFileSync(dir + 'package.json', JSON.stringify(object), { flag: 'a+', encoding: 'utf8' });
                 resolve();
             }
         });    

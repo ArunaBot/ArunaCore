@@ -58,9 +58,11 @@ class ModuleLoader {
 
                     if (aModule.requireCore > parseFloat(pkg.version)) {
                         const ver = `The ${aModule.name} module requires a higher version of the core (${aModule.requireCore}+). Please update your ArunaCore to run this module.`;
-                        this.logger.error(ver);
+                        this.logger.warn(ver);
                         return reject(ver);
                     }
+
+                    delete aModule.requireCore;
 
                     var dependencies = '';
                     var devDependencies = '';
