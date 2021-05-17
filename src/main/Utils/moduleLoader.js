@@ -56,7 +56,7 @@ class ModuleLoader {
                 .then(async (aModule) => {
                     this.logger.info(`Installing Module: ${aModule.name}...`);
 
-                    if (aModule.requireCore > parseFloat(pkg.version)) {
+                    if (aModule.requireCore && (aModule.requireCore > parseFloat(pkg.version))) {
                         const ver = `The ${aModule.name} module requires a higher version of the core (${aModule.requireCore}+). Please update your ArunaCore to run this module.`;
                         this.logger.warn(ver);
                         return reject(ver);
