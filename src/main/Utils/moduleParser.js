@@ -73,9 +73,15 @@ class ModuleParser {
         read = JSON.parse(read);
 
         Object.entries(read).forEach(([key, val]) => {
-            this.modules.push(val);
-            this.logger.debug(`${key} module found as installed.`);
+            if (!fs.existsSync(val)){
+                delete read[key];
+            } else {
+                this.modules.push(val);
+                this.logger.debug(`${key} module found as installed.`);
+            }
         });
+
+        fs.writeFileSync(moduleList, JSON.stringify(read));
 
         return Promise.resolve(this.modules);
     }
