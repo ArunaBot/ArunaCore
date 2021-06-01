@@ -18,9 +18,10 @@
   },
   "homepage": "https://github.com/ArunaBot/ArunaCore#readme",
   "engines": {
-    "node": ">=0.12 < 0.15"
+    "node": ">=12.10.x < 15.x"
   },
   "dependencies": {
+    "adm-zip": "^0.5.5",
     "chalk": "^4.1.1",
     "del": "^6.0.0",
     "nodemon": "^2.0.7",

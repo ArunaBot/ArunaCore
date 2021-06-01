@@ -17,7 +17,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const semver = require('semver');
 const EventEmitter = require('events');
+const pkg = require(path.resolve(__dirname, '..', '..', 'package.json'));
 const { logger: LoggerC, ModuleLoader, ModuleParser } = require(path.resolve(__dirname,'Utils'));
 
 var logger;
@@ -32,6 +34,11 @@ class Main extends EventEmitter {
     async start() {
         logger.debug('Hello World!');
         logger.info('Starting Core Initialization...');
+
+        if (!semver.satisfies(process.version, pkg.engines.node)) {
+            logger.fatal(`Invalid node version! Please use a version that complies with the following standard: ${pkg.engines.node}`)
+        }
+
         args = process.argv.slice(2);
 
         if (args[0]) {
