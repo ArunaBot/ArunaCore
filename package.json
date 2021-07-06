@@ -22,14 +22,16 @@
   },
   "dependencies": {
     "adm-zip": "^0.5.5",
+    "axios": "^0.21.1",
     "chalk": "^4.1.1",
     "del": "^6.0.0",
-    "nodemon": "^2.0.7",
+    "mongoose": "^5.13.2",
+    "nodemon": "^2.0.9",
     "semver": "^7.3.5",
-    "ws": "^7.4.5",
+    "ws": "^7.5.2",
     "yaml": "^1.10.2"
   },
   "devDependencies": {
-    "eslint": "^7.26.0"
+    "eslint": "^7.30.0"
   }
 }
