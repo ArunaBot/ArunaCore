@@ -36,7 +36,7 @@ class Main extends EventEmitter {
         logger.info('Starting Core Initialization...');
 
         if (!semver.satisfies(process.version, pkg.engines.node)) {
-            logger.fatal(`Invalid node version! Please use a version that complies with the following standard: ${pkg.engines.node}`)
+            logger.fatal(`Invalid node version! Please use a version that complies with the following standard: ${pkg.engines.node}`);
         }
 
         args = process.argv.slice(2);

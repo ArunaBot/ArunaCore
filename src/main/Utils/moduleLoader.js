@@ -1,5 +1,23 @@
+/* 
+    This file is part of ArunaCore.
+
+    ArunaCore is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    ArunaCore is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with ArunaCore.  If not, see <https://www.gnu.org/licenses/>
+*/
+
 const fs = require('fs');
 const path = require('path');
+const semver = require('semver');
 const { spawn } = require('child_process');
 const ModuleParser = require('./moduleParser');
 const pkgJG = require('./packageJsonGenerator');
@@ -56,8 +74,9 @@ class ModuleLoader {
                 .then(async (aModule) => {
                     this.logger.info(`Installing Module: ${aModule.name}...`);
 
-                    if (aModule.requireCore && (aModule.requireCore > parseFloat(pkg.version))) {
-                        const ver = `The ${aModule.name} module requires a higher version of the core (${aModule.requireCore}+). Please update your ArunaCore to run this module.`;
+                    if (!semver.satisfies(pkg.engines.node, aModule.requireCore)) {
+                        const ver = `The ${aModule.name} module requires a higher version of the core (${semver.minVersion(aModule.requireCore)}+). ` + 
+                        'Please upgrade your ArunaCore to run this module.';
                         this.logger.warn(ver);
                         return reject(ver);
                     }
