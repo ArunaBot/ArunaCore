@@ -88,19 +88,19 @@ class Main extends EventEmitter {
 
         var toLoad = installedModules;
 
-        load = load.filter((element) => !installedModules.includes(element));
+        var toInstall = load.filter((element) => !installedModules.includes(element));
 
         logger.debug(`Non Installed Modules: ${JSON.stringify(load)}.`);
 
-        if (load.length > 0) {
-            for (var i = 0; i <= load.length; i++) {
-                var element = load[i];
+        if (toInstall.length > 0) {
+            for (var i = 0; i <= toInstall.length; i++) {
+                var element = toInstall[i];
 
                 if (!element) return;
 
                 // eslint-disable-next-line no-await-in-loop
                 await loader.install(element, moduleList).then(() => {
-                    load.splice(i, 1);
+                    toInstall.splice(i, 1);
                     toLoad.push(element);
                 }).catch(() => {
                     logger.error(`Unable to install the module present in the '${element.replace('.arunamodule', '')}' directory, skipping ...`);

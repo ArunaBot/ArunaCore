@@ -112,7 +112,7 @@ class ModuleLoader {
 
                     if (devDependencies !== undefined) {
                         if (devDependencies.startsWith(' ')) devDependencies = devDependencies.replace(' ', '');
-                        
+
                         this.logger.info(`Installing ${aModule.name} Dev Dependencies...`);
 
                         await this.installDeps(devDependencies, moduleDir.replace('.arunamodule', ''), true);
@@ -137,7 +137,7 @@ class ModuleLoader {
     async installDeps(dependencies, moduleDir, isDev) {
         return new Promise((resolve, reject) => {
             var i;
-    
+
             if (isDev) {
                 i = spawn('npm', ['--save-dev', 'i', dependencies], { cwd: moduleDir });
             } else {
