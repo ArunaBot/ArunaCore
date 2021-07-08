@@ -1,5 +1,8 @@
 const yaml = require('yaml');
+const path = require('path');
 const fs = require('fs');
+
+const pkg = require(path.resolve(__dirname, '..', '..', '..', 'package.json'));
 
 class ModuleParser {
     constructor(logger) {
@@ -51,11 +54,23 @@ class ModuleParser {
                     finalObj.engines.npm = 'please-use-yarn';
                 }
 
+                if (!finalObj.engines.yarn) {
+                    finalObj.engines.yarn = pkg.engines.yarn;
+                }
+
                 finalObj.scripts = obj.nodeInfo.scripts || {};
                 
                 if (!finalObj.scripts.preinstall) {
                     finalObj.scripts.preinstall = 'node -e \'if(!/yarn\\.js$/.test(process.env.npm_execpath))throw new Error("Use yarn")\'';
                 }
+
+                if (!obj.nodeInfo.scripts.start) {
+                    obj.nodeInfo.scripts.start = 'node .';
+                }
+
+                finalObj.scripts.start = 'NODE_PATH=' + path.resolve(__dirname, '..', '..', '..', 'dependencies', 'modules') + ' ' + obj.nodeInfo.scripts.start;
+                
+                finalObj.core = { NODE_PATH: path.resolve(__dirname, '..', '..', '..', 'dependencies', 'modules') };
 
                 finalObj.keywords = obj.nodeInfo.keywords;
                 finalObj.bugs = obj.nodeInfo.bugs;

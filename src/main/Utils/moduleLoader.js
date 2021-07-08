@@ -139,9 +139,9 @@ class ModuleLoader {
             var i;
 
             if (isDev) {
-                i = spawn('npm', ['--save-dev', 'i', dependencies], { cwd: moduleDir });
+                i = spawn('yarn', ['add', '--dev', dependencies], { cwd: moduleDir });
             } else {
-                i = spawn('npm', ['i', dependencies], { cwd: moduleDir });
+                i = spawn('yarn', ['add', dependencies], { cwd: moduleDir });
             }
                             
             i.on('error', (error) => {
