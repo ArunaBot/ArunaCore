@@ -47,7 +47,16 @@ class ModuleParser {
 
                 finalObj.engines = obj.moduleInfo.engines;
 
+                if (!obj.moduleInfo.engines.npm) {
+                    finalObj.engines.npm = 'please-use-yarn';
+                }
+
                 finalObj.scripts = obj.nodeInfo.scripts;
+                
+                if (!obj.moduleInfo.scripts.preinstall) {
+                    finalObj.scripts.preinstall = 'node -e \'if(!/yarn\\.js$/.test(process.env.npm_execpath))throw new Error("Use yarn")\'';
+                }
+
                 finalObj.keywords = obj.nodeInfo.keywords;
                 finalObj.bugs = obj.nodeInfo.bugs;
                 finalObj.homepage = obj.nodeInfo.homepage;
@@ -60,6 +69,7 @@ class ModuleParser {
                         delete finalObj[key];
                     }
                 });
+
                 return resolve(finalObj);
             }
         });
