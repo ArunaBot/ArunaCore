@@ -74,7 +74,7 @@ class ModuleLoader {
                 .then(async (aModule) => {
                     this.logger.info(`Installing Module: ${aModule.name}...`);
 
-                    if (!semver.satisfies(pkg.engines.node, aModule.requireCore)) {
+                    if (!semver.satisfies(pkg.version, aModule.requireCore)) {
                         const ver = `The ${aModule.name} module requires a higher version of the core (${semver.minVersion(aModule.requireCore)}+). ` + 
                         'Please upgrade your ArunaCore to run this module.';
                         this.logger.warn(ver);
