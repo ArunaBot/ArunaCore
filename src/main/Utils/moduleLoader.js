@@ -128,8 +128,8 @@ class ModuleLoader {
                     
                     resolve(moduleDir);
                 }).catch((err) => {
-                    this.logger.error(err);
-                    return reject(err);
+                    this.logger.error(JSON.stringify(err));
+                    return reject(JSON.stringify(err));
                 });
         });
     }

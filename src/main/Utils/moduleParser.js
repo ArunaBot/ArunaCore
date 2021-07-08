@@ -40,20 +40,20 @@ class ModuleParser {
                 finalObj.license = obj.moduleInfo.license;
                 finalObj.repository = obj.moduleInfo.repository;
 
-                if (obj.moduleInfo.engines.core) {
+                if (obj.moduleInfo.engines && obj.moduleInfo.engines.core) {
                     finalObj.requireCore = obj.moduleInfo.engines.core;
                     delete obj.moduleInfo.engines.core;
                 }
 
-                finalObj.engines = obj.moduleInfo.engines;
+                finalObj.engines = obj.moduleInfo.engines || {};
 
-                if (!obj.moduleInfo.engines.npm) {
+                if (!finalObj.engines.npm) {
                     finalObj.engines.npm = 'please-use-yarn';
                 }
 
-                finalObj.scripts = obj.nodeInfo.scripts;
+                finalObj.scripts = obj.nodeInfo.scripts || {};
                 
-                if (!obj.moduleInfo.scripts.preinstall) {
+                if (!finalObj.scripts.preinstall) {
                     finalObj.scripts.preinstall = 'node -e \'if(!/yarn\\.js$/.test(process.env.npm_execpath))throw new Error("Use yarn")\'';
                 }
 

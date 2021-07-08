@@ -11,6 +11,7 @@ class PackageJsonGenerator {
             try {
                 fs.unlinkSync(dir + 'package.json');
                 fs.unlinkSync(dir + 'package-lock.json');
+
                 del.sync(dir + '/node_modules/');
             } catch {
 
