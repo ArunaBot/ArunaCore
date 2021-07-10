@@ -17,7 +17,7 @@
 
 const path = require('path');
 const EventEmitter = require('events');
-const { logger: LoggerC } = require(path.resolve(__dirname, '..', 'Utils', 'logger'));
+const { logger: LoggerC } = require(path.resolve(__dirname, '..', 'Utils'));
 
 /**
  * Module Manager
