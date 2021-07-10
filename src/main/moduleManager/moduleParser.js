@@ -121,14 +121,14 @@ class ModuleParser {
      * @return {string}
      */
     async isModuleEnabled(module) {
-        if (!module.existsSync()) {
+        if (!fs.existsSync(module)) {
             return false;
         }
 
         const arunaModule = fs.readFileSync(module, 'utf8');
         const obj = await yaml.parse(arunaModule);
 
-        return obj.enabled;
+        return obj.moduleInfo.enabled, obj.moduleInfo.name;
     }
 }
 

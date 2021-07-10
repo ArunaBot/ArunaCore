@@ -106,7 +106,7 @@ class Main extends EventEmitter {
                     toInstall.splice(i, 1);
                     toLoad.push(element);
                 }).catch((e) => {
-                    logger.debug(e);
+                    logger.debug(JSON.stringify(e));
                     logger.error(`Unable to install the module present in the '${element.replace('.arunamodule', '')}' directory, skipping ...`);
                 });
             }
