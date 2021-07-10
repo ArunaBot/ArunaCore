@@ -20,9 +20,10 @@ const path = require('path');
 const WebSocket = require('ws');
 const semver = require('semver');
 const EventEmitter = require('events');
+const { logger: LoggerC } = require(path.resolve(__dirname,'Utils'));
 const pkg = require(path.resolve(__dirname, '..', '..', 'package.json'));
 const WebSocketServer = require(path.resolve(__dirname, 'WebSocket', 'server'));
-const { logger: LoggerC, ModuleLoader, ModuleParser } = require(path.resolve(__dirname,'Utils'));
+const { ModuleLoader, ModuleParser } = require(path.resolve(__dirname,'moduleManager'));
 
 var logger;
 var args;
@@ -153,7 +154,9 @@ class Main extends EventEmitter {
 
         const wss = new WebSocketServer(process.env.PORT || 3000, true);
 
-        await wss.start();
+        const wsParser = await wss.start();
+
+        this.wsParser = wsParser;
 
         const coreWS = new WebSocket(`ws://localhost:${process.env.PORT || 3000}`);
 
@@ -163,16 +166,63 @@ class Main extends EventEmitter {
 
         coreWS.on('message', (message) => {
             if (message === ':W.S.S. 001 CORE :Welcome to ArunaCore!') {
+                this.continue = true;
                 return logger.info('WebSocket Server Started!');
             } else {
                 return this.webSocketMessageHandler(message);
             }
         });
 
+        await this.waiter(false);
+
+        logger.info('Core Started!');
+
+        const moduleManager = await loader.start(toLoad, { port: process.env.PORT || 3000, host: 'localhost'});
+        this.moduleManager = moduleManager;
+
+        var total = toLoad.length;
+
+        moduleManager.on('start', () => {
+            total--;
+            if (total == 0) {
+                logger.info('All Modules Started!');
+                this.continue = true;
+            }
+        });
+
+        await this.waiter(false);
+
+        this.emit('ready');
     }
 
-    webSocketMessageHandler(message) {
-        // TODO: Implement
+    webSocketMessageHandler(rawMessage) {
+        if (!rawMessage) return;
+
+        const message = this.wsParser.parse(rawMessage);
+
+        if (!message || typeof message !== 'object') return;
+
+        switch (message.command) {
+            case '011':
+                break;
+            case '010':
+                break;
+            default:
+                break;
+        }
+
+    }
+
+    async waiter(bool) {
+        if (bool) this.continue = bool;
+        if (this.continue) return;
+
+        await new Promise((resolve) => {
+            setTimeout(() => {
+                this.waiter();
+                resolve();
+            }, 1000);
+        });
     }
 }
 

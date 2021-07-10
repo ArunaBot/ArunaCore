@@ -14,7 +14,7 @@ class WebSocketServer {
     async start() {
         this.WebSocket = new WebSocket.Server({ port: this.port, perMessageDeflate: false });
         this.startListener(this.WebSocket);
-        return Promise.resolve();
+        return Promise.resolve(new WSParser('CORE'));
     }
 
     startListener(WebSocket) {

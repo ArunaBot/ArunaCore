@@ -20,8 +20,9 @@ const path = require('path');
 const semver = require('semver');
 const { spawn } = require('child_process');
 const ModuleParser = require('./moduleParser');
-const pkgJG = require('./packageJsonGenerator');
+const ModuleManager = require('./moduleManager');
 const pkg = require(path.resolve(__dirname, '..', '..', '..', 'package.json'));
+const pkgJG = require(path.resolve(__dirname, '..','Utils', 'packageJsonGenerator'));
 
 class ModuleLoader {
     constructor(logger) {
@@ -153,6 +154,27 @@ class ModuleLoader {
                 if (code === 0) return resolve();
                 return reject('Error!');
             });
+        });
+    }
+
+    /**
+     * Start the module.
+     * @param {Array} [modules]
+     * @param {Object} [webSocketProperties]
+     * @returns {Promise}
+     */
+    async start(modules, webSocketProperties) {
+        this.logger.info('Starting Modules...');
+        const moduleManager = new ModuleManager();
+        // eslint-disable-next-line no-async-promise-executor
+        return new Promise(async (resolve) => {
+            for (var i = 0; i < modules.length; i++) {
+                this.logger.info(`Starting Module: ${modules[i]}...`);
+                // eslint-disable-next-line no-await-in-loop
+                await this.startModule(modules[i], webSocketProperties);
+            }
+
+            resolve(moduleManager);
         });
     }
 }
