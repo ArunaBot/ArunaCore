@@ -171,7 +171,7 @@ class ModuleLoader {
             for (var i = 0; i < modules.length; i++) {
                 this.logger.info(`Starting Module: ${modules[i]}...`);
                 // eslint-disable-next-line no-await-in-loop
-                await this.startModule(modules[i], webSocketProperties);
+                await moduleManager.start(modules[i], webSocketProperties);
             }
 
             resolve(moduleManager);
