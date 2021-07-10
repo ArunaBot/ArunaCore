@@ -31,7 +31,8 @@ var args;
 class Main extends EventEmitter {
     constructor() {
         super();
-        logger = new LoggerC({ debug: true, prefix: 'CORE' });
+        this.debug = true;
+        logger = new LoggerC({ debug: this.debug, prefix: 'CORE' });
     }
 
     async start() {
@@ -157,7 +158,7 @@ class Main extends EventEmitter {
 
         logger.info('Initializing WebSocket Server...');
 
-        const wss = new WebSocketServer(process.env.PORT || 3000, true);
+        const wss = new WebSocketServer(this.debug, process.env.PORT || 3000);
 
         const wsParser = await wss.start();
 
