@@ -121,7 +121,7 @@ class Main extends EventEmitter {
 
         for (let i = 0; i <= toLoad.length; i++) {
             // eslint-disable-next-line no-await-in-loop
-            await parser.enable(toLoad[i]).then(async (isEnabled, name) => {
+            await parser.isModuleEnabled(toLoad[i]).then(async (isEnabled, name) => {
                 if (!isEnabled) {
                     toLoad.splice(i, 1);
                     i--;
