@@ -4,6 +4,7 @@
 *.md text eol=lf
 *.xml text eol=lf
 *.yml text eol=lf
+*.arunamodule text eol=lf
 *.ini text=auto
 *.txt text=auto
 *.bat text eol=crlf
