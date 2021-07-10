@@ -2,9 +2,6 @@ const fs = require('fs');
 const del = require('del');
 
 class PackageJsonGenerator {
-    constructor () {
-    }
-
     gen(object, dir) {
         // eslint-disable-next-line no-async-promise-executor
         return new Promise(async (resolve) => {
