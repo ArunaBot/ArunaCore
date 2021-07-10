@@ -150,6 +150,11 @@ class Main extends EventEmitter {
             });
         }
 
+        if (toLoad.length == 0) {
+            logger.error('No Modules to Load! Shutting Down...');
+            return process.exit(0);
+        }
+
         logger.info('Initializing WebSocket Server...');
 
         const wss = new WebSocketServer(process.env.PORT || 3000, true);
