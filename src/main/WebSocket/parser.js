@@ -4,18 +4,21 @@ class WebSocketParser {
     }
 
     parser(rawMessage) {
-        const ircMessage = rawMessage.split(' ');
+        const ircMessage = rawMessage.split(/ +/g);
         const sender = ircMessage[0].substr(1);
         const command = ircMessage[1];
         var destination = ircMessage[2];
-        var params = ircMessage.slice(3).substr(1).split(' ');
+        ircMessage.splice(0, 3);
+        var params = ircMessage;
         var hasTo = true;
 
         if (destination.startsWith(':')) {
-            params = destination.slice(2).substr(1);
+            params = destination.slice(2).split(/ +/g);
             destination = 'CORE';
             hasTo = false;
         }
+
+        params[0] = params[0].startsWith(':') ? params[0].replace(':', '') : params[0];
 
         const obj = {
             initial: false,
