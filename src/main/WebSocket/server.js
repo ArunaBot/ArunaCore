@@ -19,28 +19,29 @@ class WebSocketServer {
 
     startListener(WebSocket) {
         var connections = {};
+        var parser = this.parser;
         const timeout = setTimeout(() => {
             this.logger.fatal('The Core Isn\'t Ready!');
         }, 60000);
         WebSocket.on('connection', function connection(WSS) {
             var iTimeout = setTimeout(() => {
                 this.logger.error('Error: Invalid WebSocket Connection!');
-                connections.core.send(this.parser.icParser());
+                connections.core.send(parser.icParser());
                 return WSS.close();
             }, 120000);
             WSS.on('message', function incoming(rawMessage) {
-                var message = this.parser.parser(rawMessage);
+                var message = parser.parser(rawMessage);
 
                 if (message.initial) {
                     clearTimeout(iTimeout);
                     if (message.who.toLowerCase() === 'core') {
                         connections['core'] = WSS;
                         clearTimeout(timeout);
-                        return WSS.send(this.parser.iParser(message.who));
+                        return WSS.send(parser.iParser(message.who));
                     }
                     connections[message.who.toLowerCase()] = WSS;
-                    connections.core.send(this.parser.mrParser(message.who));
-                    return WSS.send(this.parser.iParser(message.who));
+                    connections.core.send(parser.mrParser(message.who));
+                    return WSS.send(parser.iParser(message.who));
                 }
 
                 if (message.hasTo) {
