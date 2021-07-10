@@ -212,6 +212,7 @@ class Main extends EventEmitter {
             case '011':
                 break;
             case '010':
+                this.moduleManager.emit('WaitWS', message.who, true);
                 break;
             default:
                 break;
