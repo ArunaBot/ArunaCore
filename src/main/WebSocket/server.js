@@ -4,17 +4,17 @@ const WSParser = require('./parser');
 const { logger: LoggerC } = require(path.resolve(__dirname, '..', 'Utils'));
 
 class WebSocketServer {
-    constructor(port, debug, prefix) {
+    constructor(debug, port, prefix) {
+        this.port = port ? port : 3000;
         this.prefix = prefix ? prefix : 'W.S.S.';
-        this.port = port;
-        this.parser = new WSParser(prefix);
+        this.parser = new WSParser(this.prefix);
         this.logger = new LoggerC({ debug: debug, prefix: prefix });
     }
 
     async start() {
         this.WebSocket = new WebSocket.Server({ port: this.port, perMessageDeflate: false });
         this.startListener(this.WebSocket);
-        return true;
+        return Promise.resolve();
     }
 
     startListener(WebSocket) {
@@ -33,7 +33,7 @@ class WebSocketServer {
 
                 if (message.initial) {
                     clearTimeout(iTimeout);
-                    if (message.from.toLowerCase() === 'core') {
+                    if (message.who.toLowerCase() === 'core') {
                         connections['core'] = WSS;
                         clearTimeout(timeout);
                         return WSS.send(this.parser.iParser(message.who));

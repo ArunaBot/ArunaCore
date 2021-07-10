@@ -17,9 +17,11 @@
 
 const fs = require('fs');
 const path = require('path');
+const WebSocket = require('ws');
 const semver = require('semver');
 const EventEmitter = require('events');
 const pkg = require(path.resolve(__dirname, '..', '..', 'package.json'));
+const WebSocketServer = require(path.resolve(__dirname, 'WebSocket', 'server'));
 const { logger: LoggerC, ModuleLoader, ModuleParser } = require(path.resolve(__dirname,'Utils'));
 
 var logger;
@@ -146,6 +148,31 @@ class Main extends EventEmitter {
                 logger.error(`Unable to enable the module present in the '${toLoad[i].replace('.arunamodule', '')}' directory, skipping ...`);
             });
         }
+
+        logger.info('Initializing WebSocket Server...');
+
+        const wss = new WebSocketServer(process.env.PORT || 3000, true);
+
+        await wss.start();
+
+        const coreWS = new WebSocket(`ws://localhost:${process.env.PORT || 3000}`);
+
+        coreWS.on('open', () => {
+            coreWS.send(':CORE 000 W.S.S. :EnableWS');
+        });
+
+        coreWS.on('message', (message) => {
+            if (message === ':W.S.S. 001 CORE :Welcome to ArunaCore!') {
+                return logger.info('WebSocket Server Started!');
+            } else {
+                return this.webSocketMessageHandler(message);
+            }
+        });
+
+    }
+
+    webSocketMessageHandler(message) {
+        // TODO: Implement
     }
 }
 
