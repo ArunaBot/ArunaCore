@@ -110,6 +110,24 @@ class ModuleParser {
 
         return Promise.resolve(this.modules);
     }
+
+    /**
+     * Check if module is enabled
+     * returns true if enabled, false if not and module name
+     * @param {string} .arunaModule directory
+     * @return {boolean}
+     * @return {string}
+     */
+    async isModuleEnabled(module) {
+        if (!module.existsSync()) {
+            return false;
+        }
+
+        const arunaModule = fs.readFileSync(module, 'utf8');
+        const obj = await yaml.parse(arunaModule);
+
+        return obj.enabled;
+    }
 }
 
 module.exports = ModuleParser;

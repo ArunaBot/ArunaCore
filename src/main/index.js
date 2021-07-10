@@ -93,7 +93,7 @@ class Main extends EventEmitter {
         logger.debug(`Non Installed Modules: ${JSON.stringify(load)}.`);
 
         if (toInstall.length > 0) {
-            for (var i = 0; i <= toInstall.length; i++) {
+            for (let i = 0; i <= toInstall.length; i++) {
                 var element = toInstall[i];
 
                 if (!element) return;
@@ -111,10 +111,41 @@ class Main extends EventEmitter {
         
         if (toLoad.length == 0) {
             logger.error('No Modules to Load! Shutting Down...');
-            return process.exit(-1);
+            return process.exit(0);
         }
 
-        logger.info('Getting Enabled Modules and Finishing Core Initialization...');
+        logger.info('Getting Enabled Modules...');
+
+        for (let i = 0; i <= toLoad.length; i++) {
+            // eslint-disable-next-line no-await-in-loop
+            await parser.enable(toLoad[i]).then(async (isEnabled, name) => {
+                if (!isEnabled) {
+                    toLoad.splice(i, 1);
+                    i--;
+                }
+
+                logger.info(`Pre-Loading Module: ${name}...`);
+
+                if (!fs.existsSync(toLoad[i].replace('.arunamodule', '') + 'package.json') ||
+                    !fs.existsSync(toLoad[i].replace('.arunamodule', '') + 'yarn.lock')) {
+                    await loader.install(element, moduleList).then(() => {
+                        logger.info(`Pre-Loaded Module: ${name}!`);
+                    }).catch((e) => {
+                        i--;
+                        logger.debug(e);
+                        toLoad.splice(i, 1);
+                        logger.error(`Unable to install the module present in the '${element.replace('.arunamodule', '')}' directory, skipping initialization ...`);
+                    });
+                } else {
+                    logger.info(`Pre-Loaded Module: ${name}!`);
+                }
+            }).catch((e) => {
+                i--;
+                logger.debug(e);
+                toLoad.splice(i, 1);
+                logger.error(`Unable to enable the module present in the '${toLoad[i].replace('.arunamodule', '')}' directory, skipping ...`);
+            });
+        }
     }
 }
 
