@@ -119,7 +119,7 @@ class Main extends EventEmitter {
 
         logger.info('Getting Enabled Modules...');
 
-        for (let i = 0; i <= toLoad.length; i++) {
+        for (let i = 0; i + 1 <= toLoad.length; i++) {
             // eslint-disable-next-line no-await-in-loop
             await parser.isModuleEnabled(toLoad[i]).then(async (isEnabled, name) => {
                 if (!isEnabled) {
@@ -134,19 +134,19 @@ class Main extends EventEmitter {
                     await loader.install(element, moduleList).then(() => {
                         logger.info(`Pre-Loaded Module: ${name}!`);
                     }).catch((e) => {
-                        i--;
                         logger.debug(e);
-                        toLoad.splice(i, 1);
                         logger.error(`Unable to install the module present in the '${element.replace('.arunamodule', '')}' directory, skipping initialization ...`);
+                        toLoad.splice(i, 1);
+                        i--;
                     });
                 } else {
                     logger.info(`Pre-Loaded Module: ${name}!`);
                 }
             }).catch((e) => {
-                i--;
-                logger.debug(e);
-                toLoad.splice(i, 1);
+                logger.debug(JSON.stringify(e));
                 logger.error(`Unable to enable the module present in the '${toLoad[i].replace('.arunamodule', '')}' directory, skipping ...`);
+                toLoad.splice(i, 1);
+                i--;
             });
         }
 
