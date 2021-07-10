@@ -16,5 +16,7 @@
 */
 
 module.exports = {
-    logger: require('./logger'),
+    ModuleLoader: require('./moduleLoader'),
+    ModuleManager: require('./moduleManager'),
+    ModuleParser: require('./moduleParser')
 };
