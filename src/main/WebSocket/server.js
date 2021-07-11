@@ -37,7 +37,7 @@ class WebSocketServer {
 
                 if (message.final) {
                     WSS.send(parser.fParser(message.who));
-                    stopWebSocket(connections);
+                    stopWebSocket(WebSocket, connections);
                 }
 
                 if (message.initial) {
@@ -64,14 +64,14 @@ class WebSocketServer {
      * @param {Object<WebSocket>} [connections]
      * @return {Promise<void>}
      */
-    async stop(connections) {
+    async stop(WebSocket, connections) {
         return new Promise((resolve) => {
             if (connections && connections['core']) {
                 for (const key in connections) {
                     connections[key].close();
                 }
             }
-            this.WebSocket.close();
+            WebSocket.close();
             resolve();
         });
     }
