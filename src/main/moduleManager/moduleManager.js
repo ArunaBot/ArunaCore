@@ -29,6 +29,7 @@ class ModuleManager extends EventEmitter {
         super();
         this.modules = {};
         this.logger = new LoggerC({ debug: true, prefix: 'ModuleManager'});
+        this.redefine = (moduleList) => { this.modules = moduleList; };
     }
 
     /**
@@ -47,13 +48,12 @@ class ModuleManager extends EventEmitter {
             const aModule = yaml.parse(arunaModule);
             const moduleName = aModule.moduleInfo.name;
 
-            if (this.modules.find(m => m.name === moduleName)) {
+            if (this.modules[moduleName]) {
                 this.logger.error(`The module ${moduleName} is already started!`);
                 return reject(`The module ${moduleName} is already started!`);
             }
 
             this.moduleStart(moduleDir.replace('.arunamodule', '')).then(() => {
-                this.modules.push(moduleName);
                 this.logger.info(`Module ${moduleName} started!`);
                 this.emit('moduleStart', moduleName);
                 return resolve(moduleName);
@@ -71,8 +71,14 @@ class ModuleManager extends EventEmitter {
      */
     async moduleStart(moduleDir) {
         const send = this.send();
+
+        const runningModules = this.modules;
+
+        const redefine = this.redefine;
+
         function deleteModule(moduleName) {
-            delete this.modules[moduleName];
+            delete runningModules[moduleName];
+            redefine(runningModules);
         }
         // eslint-disable-next-line no-async-promise-executor
         return new Promise(async (resolve, reject) => {
@@ -95,11 +101,11 @@ class ModuleManager extends EventEmitter {
             const child = require('child_process').spawn('yarn', ['start'], { cwd: moduleDir });
 
             child.stdout.on('data', (data) => {
-                console.log(data);
+                console.log(data.toString());
             });
 
             child.stderr.on('data', (data) => {
-                console.error(data);
+                console.error(data.toString());
             });
 
             child.on('close', (code) => {
