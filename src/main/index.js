@@ -227,27 +227,30 @@ class Main extends EventEmitter {
      * Stops the core, websocket and all modules.
      */
     async stop() {
-        this.logger.warn('Stopping modules...');
+        logger.warn('Stopping modules...');
         this.moduleManager.emit('stop', 'all');
         this.moduleManager.on('finishedAll', () => {
-            this.logger.warn('All modules stopped!');
-            this.continue = true;
+            return this.continue = true;
         });
 
         await this.waiter(false);
 
-        this.logger.warn('Stopping WebSocket Server...');
+        logger.warn('All modules stopped!');
+
+        logger.warn('Stopping WebSocket Server...');
+
         this.coreWS.send(':CORE 000 W.S.S. :DisableWS');
         this.coreWS.on('message', (message) => {
             if (message === ':W.S.S. 002 CORE :Goodbye, ArunaCore!') {
-                this.continue = true;
-                return this.logger.warn('WebSocket Server Stopped!');
+                return this.continue = true;
             }
         });
 
         await this.waiter(false);
 
-        this.logger.info('Goodbye, I see you soon! :)');
+        logger.warn('WebSocket Server Stopped!');
+
+        logger.info('Goodbye, I see you soon! :)');
     }
 
     async waiter(bool) {
@@ -267,3 +270,6 @@ const main = new Main();
 
 main.start();
 
+setTimeout(() => {
+    main.stop();
+}, 15000);
