@@ -116,9 +116,9 @@ class ModuleParser {
     /**
      * Check if module is enabled
      * returns true if enabled, false if not and module name
-     * @param {string} .arunaModule directory
-     * @return {boolean}
-     * @return {string}
+     * @param {String} [.arunaModuleDirectory]
+     * @return {Boolean}
+     * @return {String}
      */
     async isModuleEnabled(module) {
         if (!fs.existsSync(module)) {
@@ -128,7 +128,7 @@ class ModuleParser {
         const arunaModule = fs.readFileSync(module, 'utf8');
         const obj = await yaml.parse(arunaModule);
 
-        return obj.moduleInfo.enabled, obj.moduleInfo.name;
+        return [obj.moduleInfo.enabled, obj.moduleInfo.name];
     }
 }
 

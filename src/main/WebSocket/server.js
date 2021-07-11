@@ -20,21 +20,29 @@ class WebSocketServer {
     startListener(WebSocket) {
         var connections = {};
         var parser = this.parser;
+        const stopWebSocket = this.start();
         const timeout = setTimeout(() => {
             this.logger.fatal('The Core Isn\'t Ready!');
         }, 60000);
+
         WebSocket.on('connection', function connection(WSS) {
             var iTimeout = setTimeout(() => {
                 this.logger.error('Error: Invalid WebSocket Connection!');
                 connections.core.send(parser.icParser());
                 return WSS.close();
-            }, 120000);
+            }, 60000);
+
             WSS.on('message', function incoming(rawMessage) {
                 var message = parser.parser(rawMessage);
 
+                if (message.final) {
+                    WSS.send(parser.fParser(message.who));
+                    stopWebSocket(connections);
+                }
+
                 if (message.initial) {
                     clearTimeout(iTimeout);
-                    if (message.who.toLowerCase() === 'core') {
+                    if (message.who.toLowerCase() === 'core' && !connections['core']) {
                         connections['core'] = WSS;
                         clearTimeout(timeout);
                         return WSS.send(parser.iParser(message.who));
@@ -50,6 +58,24 @@ class WebSocketServer {
             });
         });
     }
+
+    /**
+     * Finish all connections and Stop the WebSocket Server.
+     * @param {Object<WebSocket>} [connections]
+     * @return {Promise<void>}
+     */
+    async stop(connections) {
+        return new Promise((resolve) => {
+            if (connections && connections['core']) {
+                for (const key in connections) {
+                    connections[key].close();
+                }
+            }
+            this.WebSocket.close();
+            resolve();
+        });
+    }
+
 }
 
 module.exports = WebSocketServer;

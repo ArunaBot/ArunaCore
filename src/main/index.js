@@ -94,7 +94,7 @@ class Main extends EventEmitter {
 
         var toInstall = load.filter((element) => !installedModules.includes(element));
 
-        logger.debug(`Non Installed Modules: ${JSON.stringify(load)}.`);
+        logger.debug(`Non Installed Modules: ${JSON.stringify(toInstall)}.`);
 
         if (toInstall.length > 0) {
             for (let i = 0; i <= toInstall.length; i++) {
@@ -122,7 +122,7 @@ class Main extends EventEmitter {
 
         for (let i = 0; i + 1 <= toLoad.length; i++) {
             // eslint-disable-next-line no-await-in-loop
-            await parser.isModuleEnabled(toLoad[i]).then(async (isEnabled, name) => {
+            await parser.isModuleEnabled(toLoad[i]).then(async ([isEnabled, name]) => {
                 if (!isEnabled) {
                     toLoad.splice(i, 1);
                     i--;
@@ -132,11 +132,11 @@ class Main extends EventEmitter {
 
                 if (!fs.existsSync(toLoad[i].replace('.arunamodule', '') + 'package.json') ||
                     !fs.existsSync(toLoad[i].replace('.arunamodule', '') + 'yarn.lock')) {
-                    await loader.install(element, moduleList).then(() => {
+                    await loader.install(toLoad[i], moduleList).then(() => {
                         logger.info(`Pre-Loaded Module: ${name}!`);
                     }).catch((e) => {
                         logger.debug(e);
-                        logger.error(`Unable to install the module present in the '${element.replace('.arunamodule', '')}' directory, skipping initialization ...`);
+                        logger.error(`Unable to install the module present in the '${toLoad[i].replace('.arunamodule', '')}' directory, skipping initialization ...`);
                         toLoad.splice(i, 1);
                         i--;
                     });
@@ -166,6 +166,8 @@ class Main extends EventEmitter {
 
         const coreWS = new WebSocket(`ws://localhost:${process.env.PORT || 3000}`);
 
+        this.coreWS = coreWS;
+
         coreWS.on('open', () => {
             coreWS.send(':CORE 000 W.S.S. :EnableWS');
         });
@@ -188,7 +190,8 @@ class Main extends EventEmitter {
 
         var total = toLoad.length;
 
-        moduleManager.on('start', () => {
+        moduleManager.on('moduleStart', (moduleName) => {
+            this.loaded.push(moduleName);
             total--;
             if (total == 0) {
                 logger.info('All Modules Started!');
@@ -198,7 +201,7 @@ class Main extends EventEmitter {
 
         await this.waiter(false);
 
-        this.emit('ready');
+        this.emit('ready', null);
     }
 
     webSocketMessageHandler(rawMessage) {
@@ -220,6 +223,33 @@ class Main extends EventEmitter {
 
     }
 
+    /**
+     * Stops the core, websocket and all modules.
+     */
+    async stop() {
+        this.logger.warn('Stopping modules...');
+        this.moduleManager.emit('stop', 'all');
+        this.moduleManager.on('finishedAll', () => {
+            this.logger.warn('All modules stopped!');
+            this.continue = true;
+        });
+
+        await this.waiter(false);
+
+        this.logger.warn('Stopping WebSocket Server...');
+        this.coreWS.send(':CORE 000 W.S.S. :DisableWS');
+        this.coreWS.on('message', (message) => {
+            if (message === ':W.S.S. 002 CORE :Goodbye, ArunaCore!') {
+                this.continue = true;
+                return this.logger.warn('WebSocket Server Stopped!');
+            }
+        });
+
+        await this.waiter(false);
+
+        this.logger.info('Goodbye, I see you soon! :)');
+    }
+
     async waiter(bool) {
         if (bool) this.continue = bool;
         if (this.continue) return;
@@ -233,4 +263,7 @@ class Main extends EventEmitter {
     }
 }
 
-new Main().start();
+const main = new Main();
+
+main.start();
+

@@ -27,7 +27,7 @@ const { logger: LoggerC } = require(path.resolve(__dirname, '..', 'Utils'));
 class ModuleManager extends EventEmitter {
     constructor() {
         super();
-        this.modules = [];
+        this.modules = {};
         this.logger = new LoggerC({ debug: true, prefix: 'ModuleManager'});
     }
 
@@ -55,9 +55,10 @@ class ModuleManager extends EventEmitter {
             this.moduleStart(moduleDir.replace('.arunamodule', '')).then(() => {
                 this.modules.push(moduleName);
                 this.logger.info(`Module ${moduleName} started!`);
+                this.emit('moduleStart', moduleName);
                 return resolve(moduleName);
             }).catch(err => {
-                this.logger.error(`Module ${moduleName} failed to start...`, JSON.stringify(err));
+                this.logger.error(`Module ${moduleName} failed to start: ${JSON.stringify(err)}`);
                 return reject(err);
             });
         });
@@ -69,7 +70,12 @@ class ModuleManager extends EventEmitter {
      * @return {Promise}
      */
     async moduleStart(moduleDir) {
-        return new Promise((resolve, reject) => {
+        const send = this.send();
+        function deleteModule(moduleName) {
+            delete this.modules[moduleName];
+        }
+        // eslint-disable-next-line no-async-promise-executor
+        return new Promise(async (resolve, reject) => {
             if (!moduleDir) {
                 this.logger.error('moduleDir is not provided!');
                 return reject('moduleDir is not provided!');
@@ -89,11 +95,11 @@ class ModuleManager extends EventEmitter {
             const child = require('child_process').spawn('yarn', ['start'], { cwd: moduleDir });
 
             child.stdout.on('data', (data) => {
-                this.logger.debug(`Module ${packageJson.name} stdout: ${data.toString()}`);
+                console.log(data);
             });
 
             child.stderr.on('data', (data) => {
-                this.logger.debug(`Module ${packageJson.name} stderr: ${data.toString()}`);
+                console.error(data);
             });
 
             child.on('close', (code) => {
@@ -113,6 +119,8 @@ class ModuleManager extends EventEmitter {
                         this.logger.warn(`Restarting module ${packageJson.name}...`);
                         this.logger.debug(`Restarting module ${packageJson.name}, finished with code ${code}...`);
                     } else {
+                        this.continue = true;
+                        deleteModule(packageJson.name);
                         this.logger.info(`Module ${packageJson.name} is finished!`);
                         this.logger.debug(`Module ${packageJson.name} is finished with code ${code}...`);
                     }
@@ -127,6 +135,7 @@ class ModuleManager extends EventEmitter {
                             child.kill('SIGINT');
                         }
                         finished = false;
+                        deleteModule(packageJson.name);
                         this.logger.warn(`Restarting module ${packageJson.name}...`);
                         this.logger.debug(`Restarting module ${packageJson.name}, finished with code ${code}...`);
                     }
@@ -164,12 +173,24 @@ class ModuleManager extends EventEmitter {
                 }
             }, 120000);
 
-            this.waiter(false).then(() => {
-                clearTimeout(timeout2);
-                if (sucess && !finished) {
-                    resolve();
-                } else {
-                    reject();
+            await this.waiter(false);
+
+            clearTimeout(timeout2);
+            if (sucess) {
+                resolve();
+                this.modules[packageJson.name] = child;
+            } else {
+                reject();
+            }
+
+            this.on('stop', (moduleName) => {
+                if (!moduleName) return;
+                if (moduleName === 'all') {
+                    Object.keys(this.modules).forEach(([key]) => {
+                        this.modules[key].kill('SIGINT');
+                        deleteModule(packageJson.name);
+                    });
+                    send('finishedAll', null);
                 }
             });
 
@@ -186,6 +207,30 @@ class ModuleManager extends EventEmitter {
                 this.logger.info(`Module ${packageJson.name} finished!`);
             });
         });
+    }
+
+    /**
+     * Get module status
+     * @param {String} moduleName
+     * @return {Promise<Boolean>}
+     */
+    moduleStatus(moduleName) {
+        return new Promise((resolve, reject) => {
+            if (!moduleName) {
+                this.logger.error('moduleName is not provided!');
+                return reject('moduleName is not provided!');
+            }
+
+            if (this.modules[moduleName]) {
+                return resolve(true);
+            } else {
+                return resolve(false);
+            }
+        });
+    }
+
+    send(eventName, ...args) {
+        this.emit(eventName, args);
     }
 
     async waiter(bool) {

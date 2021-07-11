@@ -20,6 +20,10 @@ class WebSocketParser {
 
         params[0] = params[0].startsWith(':') ? params[0].replace(':', '') : params[0];
 
+        if (destination === this.prefix) {
+            hasTo = false;
+        }
+
         const obj = {
             initial: false,
             who: sender,
@@ -33,6 +37,9 @@ class WebSocketParser {
             case '000':
                 if (destination === this.prefix && params[0] === 'EnableWS') {
                     obj.initial = true;
+                    return obj;
+                } else if (destination === this.prefix && params[0] === 'DisableWS' && sender === 'CORE') {
+                    obj.final = true;
                     return obj;
                 }
                 return obj;
@@ -65,6 +72,15 @@ class WebSocketParser {
      */
     mrParser(who) {
         return `:${this.prefix} 010 CORE :${who}`;
+    }
+
+    /**
+     * Return the end WebSocket Server message
+     * @param {String} [who]
+     * @return {String} [formattedMessage]
+     */
+    fParser(who) {
+        return `:${this.prefix} 002 ${who} :Goodbye, ArunaCore!`;
     }
 }
 
