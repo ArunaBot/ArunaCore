@@ -207,7 +207,7 @@ class Main extends EventEmitter {
     webSocketMessageHandler(rawMessage) {
         if (!rawMessage) return;
 
-        const message = this.wsParser.parse(rawMessage);
+        const message = this.wsParser.parser(rawMessage);
 
         if (!message || typeof message !== 'object') return;
 
