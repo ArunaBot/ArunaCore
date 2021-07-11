@@ -70,8 +70,6 @@ class ModuleManager extends EventEmitter {
      * @return {Promise}
      */
     async moduleStart(moduleDir) {
-        const send = this.send();
-
         const runningModules = this.modules;
 
         const redefine = this.redefine;
@@ -196,7 +194,7 @@ class ModuleManager extends EventEmitter {
                         this.modules[key].kill('SIGINT');
                         deleteModule(packageJson.name);
                     });
-                    send('finishedAll', null);
+                    this.emit('finishedAll', null);
                 }
             });
 
@@ -233,10 +231,6 @@ class ModuleManager extends EventEmitter {
                 return resolve(false);
             }
         });
-    }
-
-    send(eventName, ...args) {
-        this.emit(eventName, args);
     }
 
     async waiter(bool) {
