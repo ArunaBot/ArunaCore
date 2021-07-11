@@ -40,7 +40,7 @@ class ModuleParser {
                 finalObj.name = obj.moduleInfo.name;
                 finalObj.version = obj.moduleInfo.version;
                 finalObj.description = obj.moduleInfo.description;
-                finalObj.main = obj.moduleInfo.main || 'index.js';
+                finalObj.main = obj.nodeInfo.main || 'index.js';
                 finalObj.author = obj.moduleInfo.author;
                 finalObj.license = obj.moduleInfo.license;
                 finalObj.repository = obj.moduleInfo.repository;
