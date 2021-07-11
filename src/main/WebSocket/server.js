@@ -20,7 +20,7 @@ class WebSocketServer {
     startListener(WebSocket) {
         var connections = {};
         var parser = this.parser;
-        const stopWebSocket = this.start();
+        const stopWebSocket = this.stop;
         const timeout = setTimeout(() => {
             this.logger.fatal('The Core Isn\'t Ready!');
         }, 60000);
