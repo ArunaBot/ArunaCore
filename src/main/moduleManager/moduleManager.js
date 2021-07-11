@@ -52,7 +52,6 @@ class ModuleManager extends EventEmitter {
                 return reject(`The module ${moduleName} is already started!`);
             }
 
-
             this.moduleStart(moduleDir.replace('.arunamodule', '')).then(() => {
                 this.modules.push(moduleName);
                 this.logger.info(`Module ${moduleName} started!`);
@@ -85,11 +84,17 @@ class ModuleManager extends EventEmitter {
             var sucess = true;
             var finished = false;
 
-            const cmd = `yarn start ${packageJson.name}`;
             this.logger.info(`Module ${packageJson.name} is starting...`);
-            this.logger.debug(`Module ${packageJson.name} is starting...`, cmd);
 
-            const child = require('child_process').spawn('sh', ['-c', cmd], { cwd: moduleDir });
+            const child = require('child_process').spawn('yarn', ['start'], { cwd: moduleDir });
+
+            child.stdout.on('data', (data) => {
+                this.logger.debug(`Module ${packageJson.name} stdout: ${data.toString()}`);
+            });
+
+            child.stderr.on('data', (data) => {
+                this.logger.debug(`Module ${packageJson.name} stderr: ${data.toString()}`);
+            });
 
             child.on('close', (code) => {
                 finished = true;
