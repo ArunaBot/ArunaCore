@@ -15,6 +15,8 @@
     along with ArunaCore.  If not, see <https://www.gnu.org/licenses/>
 */
 
+const fs = require('fs');
+const yaml = require('yaml');
 const path = require('path');
 const EventEmitter = require('events');
 const { logger: LoggerC } = require(path.resolve(__dirname, '..', 'Utils'));
@@ -31,26 +33,30 @@ class ModuleManager extends EventEmitter {
 
     /**
      * Start module and put it in the list of modules
-     * @param {String} [moduleName]
+     * @param {String} [moduleDir]
      * @return {Promise}
      */
-    start(moduleName) {
+    start(moduleDir) {
         return new Promise((resolve, reject) => {
-            if (!moduleName) {
-                this.logger.error('moduleName is not provided!');
-                return reject('moduleName is not provided!');
+            if (!moduleDir) {
+                this.logger.error('moduleDir is not provided!');
+                return reject('moduleDir is not provided!');
             }
+
+            const arunaModule = fs.readFileSync(moduleDir, 'utf8');
+            const aModule = yaml.parse(arunaModule);
+            const moduleName = aModule.moduleInfo.name;
 
             if (this.modules.find(m => m.name === moduleName)) {
                 this.logger.error(`The module ${moduleName} is already started!`);
                 return reject(`The module ${moduleName} is already started!`);
             }
 
-            const aModule = require(path.resolve(__dirname, '..', 'modules', moduleName));
-            this.moduleStart(aModule).then(() => {
-                this.modules.push(aModule);
+
+            this.moduleStart(moduleDir.replace('.arunamodule', '')).then(() => {
+                this.modules.push(moduleName);
                 this.logger.info(`Module ${moduleName} started!`);
-                return resolve(aModule.name);
+                return resolve(moduleName);
             }).catch(err => {
                 this.logger.error(`Module ${moduleName} failed to start...`, JSON.stringify(err));
                 return reject(err);
