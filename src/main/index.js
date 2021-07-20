@@ -269,7 +269,3 @@ class Main extends EventEmitter {
 const main = new Main();
 
 main.start();
-
-setTimeout(() => {
-    main.stop();
-}, 15000);
