@@ -20,13 +20,13 @@ const path = require('path');
 const WebSocket = require('ws');
 const semver = require('semver');
 const EventEmitter = require('events');
+const { installer } = require(path.resolve(__dirname,'installer'));
 const { logger: LoggerC } = require(path.resolve(__dirname,'Utils'));
 const pkg = require(path.resolve(__dirname, '..', '..', 'package.json'));
 const WebSocketServer = require(path.resolve(__dirname, 'WebSocket', 'server'));
 const { ModuleLoader, ModuleParser } = require(path.resolve(__dirname,'moduleManager'));
 
 var logger;
-var args;
 
 class Main extends EventEmitter {
     constructor() {
@@ -43,19 +43,9 @@ class Main extends EventEmitter {
             logger.fatal(`Invalid node version! Please use a version that complies with the following standard: ${pkg.engines.node}`);
         }
 
-        args = process.argv.slice(2);
-
-        if (args[0]) {
-            switch (args[0]) {
-                case 'installer':
-                case 'install':
-                    break;
-                default:
-                    logger.error('Oops...');
-                    logger.debug(args);
-                    break;
-            }
-            return;
+        if (!fs.existsSync(path.resolve(__dirname,'..','..','configs')) || !fs.existsSync(path.resolve(__dirname,'..','..','languages'))) {
+            const install = new installer();
+            await install.start(path.resolve(__dirname,'..','..','configs'), path.resolve(__dirname,'..','resources', 'languages'));
         }
 
         const loader = new ModuleLoader(logger);
