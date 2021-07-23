@@ -116,3 +116,4 @@ modules/
 
 # ArunaCore Auto Generated Content
 *.moduleList
+configs/
