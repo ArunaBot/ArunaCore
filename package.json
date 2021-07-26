@@ -4,6 +4,8 @@
   "description": "The Core for ArunaModule Base programs",
   "main": "src/main/index.js",
   "scripts": {
+    "eslint": "eslint ./src",
+    "eslint:fix": "eslint ./src --fix",
     "preinstall": "node -e 'if(!/yarn\\.js$/.test(process.env.npm_execpath))throw new Error(\"Use yarn\")'",
     "prestart": "node -e 'if(!/yarn\\.js$/.test(process.env.npm_execpath))throw new Error(\"Use yarn\")'",
     "start": "NODE_PATH=dependencies/core node src/main/index.js",
