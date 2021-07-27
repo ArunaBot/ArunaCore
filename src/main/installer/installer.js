@@ -200,7 +200,7 @@ class Installer {
             prompt.start();
 
             prompt.get({
-                description: `${question}${defaultValue ? ` (${defaultValue})` : ''}`,
+                description: `${question.charAt(0).toUpperCase() + question.slice(1)}${defaultValue ? ` (${defaultValue})` : ''}`,
                 name: 'userInput',
                 validator: validator ? validator.validator || approveAllRegex : approveAllRegex,
                 warn: validator ? validator.warn || approveAllRegex : approveAllRegex,
