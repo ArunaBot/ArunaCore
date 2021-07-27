@@ -24,6 +24,7 @@ const { installer } = require(path.resolve(__dirname,'installer'));
 const { logger: LoggerC } = require(path.resolve(__dirname,'Utils'));
 const pkg = require(path.resolve(__dirname, '..', '..', 'package.json'));
 const WebSocketServer = require(path.resolve(__dirname, 'WebSocket', 'server'));
+const { HTTPServer } = require(path.resolve(__dirname, 'httpServer'));
 const { ModuleLoader, ModuleParser } = require(path.resolve(__dirname,'moduleManager'));
 
 var logger;
@@ -43,11 +44,17 @@ class Main extends EventEmitter {
             logger.fatal(`Invalid node version! Please use a version that complies with the following standard: ${pkg.engines.node}`);
         }
 
+        var config;
+
+        const install = new installer();
+
         if (!fs.existsSync(path.resolve(__dirname,'..','..','configs')) || !fs.existsSync(path.resolve(__dirname,'..','..','languages'))) {
-            const install = new installer();
-            await install.start(path.resolve(__dirname,'..','..','configs'), path.resolve(__dirname,'..','resources', 'languages'));
+            config = await install.start(path.resolve(__dirname,'..','..','configs'), path.resolve(__dirname,'..','resources', 'languages'));
+        } else {
+            config = (await install.loadConfig(path.resolve(__dirname,'..','..','configs'))).arunacore;
         }
 
+        
         const loader = new ModuleLoader(logger);
         const parser = new ModuleParser(logger);
         

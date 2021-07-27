@@ -77,6 +77,7 @@ class Installer {
                     this.stop = true;
                     return reject(language.class.start.errors.config.fail);
                 }
+            }
 
             if (this.stop) return;
 
@@ -99,7 +100,154 @@ class Installer {
             var numberOfQuestions = numberOfValues;
             var actualQuestion = 1;
 
+            if ((await this.getUserInput(language.class.start.questions.arunacore.debug.question, language.generic.no.normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
+                { validator: 
+                    // eslint-disable-next-line max-len
+                    new RegExp(`${language.generic.yes.normalize('NFD').replace(/[\u0300-\u036f]/g, '')}|${language.generic.no.normalize('NFD').replace(/[\u0300-\u036f]/g, '')}`, 'gi'),
+                warn: language.class.start.questions.arunacore.debug.warn
+                },
+                `${language.generic.question} ${actualQuestion}/${numberOfQuestions}`)).includes(language.generic.yes.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))) {
+
+                config.arunacore.debug = true;
             }
+
+            actualQuestion++;
+
+            var response = await this.getUserInput(language.class.start.questions.arunacore.prefix.question,
+                defaultConfigs.arunacore.arunacore.prefix,
+                `${language.generic.question} ${actualQuestion}/${numberOfQuestions}`);
+
+            response !== defaultConfigs.arunacore.arunacore.prefix ? config.arunacore.prefix = response : config.arunacore.prefix = defaultConfigs.arunacore.arunacore.prefix;
+            actualQuestion++;
+
+            if ((await this.getUserInput(language.class.start.questions.websocket.debug.question, language.generic.no.normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
+                { validator: 
+                    // eslint-disable-next-line max-len
+                    new RegExp(`${language.generic.yes.normalize('NFD').replace(/[\u0300-\u036f]/g, '')}|${language.generic.no.normalize('NFD').replace(/[\u0300-\u036f]/g, '')}`, 'gi'),
+                warn: language.class.start.questions.websocket.debug.warn
+                },
+                `${language.generic.question} ${actualQuestion}/${numberOfQuestions}`)).includes(language.generic.yes.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))) {
+
+                config.websocket.debug = true;
+            }
+
+            actualQuestion++;
+
+            response = await this.getUserInput(language.class.start.questions.websocket.prefix.question,
+                defaultConfigs.arunacore.websocket.prefix,
+                `${language.generic.question} ${actualQuestion}/${numberOfQuestions}`);
+
+            response !== defaultConfigs.arunacore.websocket.prefix ? config.websocket.prefix = response : config.websocket.prefix = defaultConfigs.arunacore.websocket.prefix;
+
+            actualQuestion++;
+
+            response = await this.getUserInput(language.class.start.questions.websocket.port.question,
+                defaultConfigs.arunacore.websocket.port,
+                { validator: /^([0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$/g, warn: language.class.start.questions.websocket.port.warn },
+                `${language.generic.question} ${actualQuestion}/${numberOfQuestions}`);
+
+            response !== defaultConfigs.arunacore.websocket.port ? config.websocket.port = response : config.websocket.port = defaultConfigs.arunacore.websocket.port;
+
+            actualQuestion++;
+
+            response = await this.getUserInput(language.class.start.questions.websocket.host.question,
+                defaultConfigs.arunacore.websocket.host,
+                `${language.generic.question} ${actualQuestion}/${numberOfQuestions}`);
+
+            response !== defaultConfigs.arunacore.websocket.host ? config.websocket.host = response : config.websocket.host = defaultConfigs.arunacore.websocket.host;
+
+            actualQuestion++;
+
+            if ((await this.getUserInput(language.class.start.questions.http.enable.question, language.generic.yes.normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
+                { validator: 
+                    // eslint-disable-next-line max-len
+                    new RegExp(`${language.generic.yes.normalize('NFD').replace(/[\u0300-\u036f]/g, '')}|${language.generic.no.normalize('NFD').replace(/[\u0300-\u036f]/g, '')}`, 'gi'),
+                warn: language.class.start.questions.http.enable.warn
+                },
+                `${language.generic.question} ${actualQuestion}/${numberOfQuestions}`)).includes(language.generic.no.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))) {
+
+                config.http.enabled = false;
+            }
+
+            actualQuestion++;
+
+            if (config.http.enabled) {
+                if ((await this.getUserInput(language.class.start.questions.http.debug.question, language.generic.no.normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
+                    { validator: 
+                    // eslint-disable-next-line max-len
+                    new RegExp(`${language.generic.yes.normalize('NFD').replace(/[\u0300-\u036f]/g, '')}|${language.generic.no.normalize('NFD').replace(/[\u0300-\u036f]/g, '')}`, 'gi'),
+                    warn: language.class.start.questions.http.debug.warn
+                    },
+                    `${language.generic.question} ${actualQuestion}/${numberOfQuestions}`)).includes(language.generic.yes.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))) {
+
+                    config.http.debug = true;
+                }
+
+                actualQuestion++;
+            } else {
+                actualQuestion++;
+            }
+
+            if (config.http.enabled) {
+                response = await this.getUserInput(language.class.start.questions.http.prefix.question,
+                    defaultConfigs.arunacore.http.prefix,
+                    `${language.generic.question} ${actualQuestion}/${numberOfQuestions}`);
+    
+                response !== defaultConfigs.arunacore.http.prefix ? config.http.prefix = response : config.http.prefix = defaultConfigs.arunacore.http.prefix;
+
+                actualQuestion++;
+            } else {
+                actualQuestion++;
+            }
+
+            if (config.http.enabled) {
+                response = await this.getUserInput(language.class.start.questions.http.port.question,
+                    defaultConfigs.arunacore.http.port,
+                    { validator: /^([0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$/g, warn: language.class.start.questions.http.port.warn },
+                    `${language.generic.question} ${actualQuestion}/${numberOfQuestions}`);
+    
+                response !== defaultConfigs.arunacore.http.port ? config.http.port = response : config.http.port = defaultConfigs.arunacore.http.port;
+
+                actualQuestion++;
+            } else {
+                actualQuestion++;
+            }
+
+            if (config.http.enabled) {
+                response = await this.getUserInput(language.class.start.questions.http.host.question,
+                    defaultConfigs.arunacore.http.host,
+                    `${language.generic.question} ${actualQuestion}/${numberOfQuestions}`);
+
+                response !== defaultConfigs.arunacore.http.host ? config.http.host = response : config.http.host = defaultConfigs.arunacore.http.host;
+
+                actualQuestion++;
+            } else {
+                actualQuestion++;
+            }
+
+            if ((await this.getUserInput(language.class.start.questions.modules.debug.question, language.generic.no.normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
+                { validator: 
+                    // eslint-disable-next-line max-len
+                    new RegExp(`${language.generic.yes.normalize('NFD').replace(/[\u0300-\u036f]/g, '')}|${language.generic.no.normalize('NFD').replace(/[\u0300-\u036f]/g, '')}`, 'gi'),
+                warn: language.class.start.questions.modules.debug.warn
+                },
+                `${language.generic.question} ${actualQuestion}/${numberOfQuestions}`)).includes(language.generic.yes.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))) {
+
+                config.modules.debug = true;
+            }
+
+            actualQuestion++;
+
+            console.log(config);
+
+            if (actualQuestion != numberOfQuestions) {
+                logger.error(language.class.start.errors.fatal.invalidQuestionNumber.replace('%s', numberOfQuestions).replace('%s', actualQuestion));
+                logger.fatal(language.class.start.errors.fatal.invalidQuestionNumber.replace('%s', numberOfQuestions).replace('%s', actualQuestion));
+                return reject(language.class.start.errors.fatal.invalidQuestionNumber.replace('%s', numberOfQuestions).replace('%s', actualQuestion));
+            }
+
+            logger.info(language.class.start.success.message);
+            // return resolve(config);
         });
     }
 
