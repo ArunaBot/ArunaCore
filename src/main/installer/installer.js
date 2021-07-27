@@ -32,7 +32,8 @@ class Installer {
     constructor() {
         this.version = pkg.version;
         this.language = osLocale.sync();
-        logger = new LoggerC({ debug: true, prefix: 'INSTALLER' });
+        this.prefix = 'INSTALLER';
+        logger = new LoggerC({ debug: true, prefix: this.prefix });
         this.gitURL = `https://github.com/ArunaBot/ArunaCore/releases/v${pkg.version}/download/`;
     }
 
@@ -72,11 +73,32 @@ class Installer {
                     defaultConfigs = await this.loadConfig(path.resolve(__dirname, '..', '..', 'resources', 'defaultConfigs'));
                 } catch (err) {
                     logger.debug(err);
-                    logger.fatal(language.class.start.errors.config.fail);
+                    logger.fatal(language.class.start.errors.config.fail); 
+                    this.stop = true;
                     return reject(language.class.start.errors.config.fail);
                 }
 
-                console.log(defaultConfigs);
+            if (this.stop) return;
+
+            const config = defaultConfigs.arunacore;
+
+            var numberOfValues = 0;
+
+            function GetAllConfigs(object) {       
+                Object.values(object).forEach((values) => {
+                    if (typeof(values) === 'object') {
+                        GetAllConfigs(values);
+                    } else {
+                        numberOfValues++;
+                    }
+                });
+            }
+
+            GetAllConfigs(config);
+
+            var numberOfQuestions = numberOfValues;
+            var actualQuestion = 1;
+
             }
         });
     }
@@ -148,13 +170,14 @@ class Installer {
       * @param {String} [question] - question to ask
       * @param {String} [default] - default value
       * @param {Object} [validator] - regex validator to user imput
+      * @param {String} [title] - title of the question
       * @return {Promise<String>}
       * 
       * @example
       * installer.getUserInput("What is your name?", "bryan", {validator: "/g/gi", warning: "My message"});
       * return "John Doe";
       */
-    getUserInput(question, defaultValue, validator) {
+    getUserInput(question, defaultValue, validator, title) {
         return new Promise((resolve, reject) => {
             if (!question) {
                 logger.error(language.class.getUserInput.error.noQuestion);
@@ -162,11 +185,18 @@ class Installer {
             }
 
             if (typeof(defaultValue) === 'object') {
+                title = validator;
                 validator = defaultValue;
                 defaultValue = null;
             }
 
+            if (typeof(validator) === 'string') {
+                title = validator;
+                validator = null;
+            }
+
             const prompt = require('prompt');
+            prompt.message = title.charAt(0).toUpperCase() + title.slice(1) || this.prefix;
             prompt.start();
 
             prompt.get({
@@ -175,7 +205,12 @@ class Installer {
                 validator: validator ? validator.validator || approveAllRegex : approveAllRegex,
                 warn: validator ? validator.warn || approveAllRegex : approveAllRegex,
             }, function (err, result) {
-                if (err) { logger.error(err); return reject(err); }
+                if (err) {
+                    logger.error(err);
+                    return reject(err);
+                }
+
+                logger.info(`${language.class.getUserInput.messages.result}: ${result.userInput || defaultValue}`);
                 return resolve(result.userInput || defaultValue);
             });
         });
