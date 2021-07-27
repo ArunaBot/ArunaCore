@@ -21,7 +21,7 @@ const axios = require('axios');
 const osLocale = require('os-locale');
 const pkg = require(path.resolve(__dirname, '..', '..', '..', 'package.json'));
 const { logger: LoggerC } = require(path.resolve(__dirname, '..', 'Utils'));
-const approveAllRegex = /^.*\)\s*/gi;
+const approveAllRegex = /(.*)/gi;
 
 var logger;
 var language; // The language!
