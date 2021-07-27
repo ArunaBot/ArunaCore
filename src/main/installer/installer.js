@@ -236,8 +236,6 @@ class Installer {
                 config.modules.debug = true;
             }
 
-            actualQuestion++;
-
             console.log(config);
 
             if (actualQuestion != numberOfQuestions) {
