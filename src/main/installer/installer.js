@@ -143,7 +143,7 @@ class Installer {
 
             response = await this.getUserInput(language.class.start.questions.websocket.port.question,
                 defaultConfigs.arunacore.websocket.port,
-                { validator: /^([0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$/g, warn: language.class.start.questions.websocket.port.warn },
+                { validator: /^([1-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$/g, warn: language.class.start.questions.websocket.port.warn },
                 `${language.generic.question} ${actualQuestion}/${numberOfQuestions}`);
 
             response !== defaultConfigs.arunacore.websocket.port ? config.websocket.port = response : config.websocket.port = defaultConfigs.arunacore.websocket.port;
@@ -203,7 +203,7 @@ class Installer {
             if (config.http.enabled) {
                 response = await this.getUserInput(language.class.start.questions.http.port.question,
                     defaultConfigs.arunacore.http.port,
-                    { validator: /^([0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$/g, warn: language.class.start.questions.http.port.warn },
+                    { validator: /^([1-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$/g, warn: language.class.start.questions.http.port.warn },
                     `${language.generic.question} ${actualQuestion}/${numberOfQuestions}`);
     
                 response !== defaultConfigs.arunacore.http.port ? config.http.port = response : config.http.port = defaultConfigs.arunacore.http.port;
