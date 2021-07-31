@@ -21,22 +21,26 @@ const WSParser = require('./parser');
 const { logger: LoggerC } = require(path.resolve(__dirname, '..', 'Utils'));
 
 class WebSocketServer {
-    constructor(debug, port, prefix) {
+    constructor(debug, port, host, prefix, corePrefix) {
+        this.host = host ? host : 'localhost';
         this.port = port ? port : 3000;
         this.prefix = prefix ? prefix : 'W.S.S.';
-        this.parser = new WSParser(this.prefix);
+        this.corePrefix = corePrefix ? corePrefix.toLowerCase() : 'core';
+        this.parser = new WSParser(this.prefix, this.corePrefix.toUpperCase());
         this.logger = new LoggerC({ debug: debug, prefix: prefix });
     }
 
     async start() {
-        this.WebSocket = new WebSocket.Server({ port: this.port, perMessageDeflate: false });
+        this.WebSocket = new WebSocket.Server({ port: this.port, host: this.host, perMessageDeflate: false });
         this.startListener(this.WebSocket);
-        return Promise.resolve(new WSParser('CORE'));
+        return Promise.resolve(new WSParser(this.corePrefix));
     }
 
     startListener(WebSocket) {
-        var connections = {};
-        var parser = this.parser;
+        const connections = {};
+        const parser = this.parser;
+        const corePrefix = this.corePrefix;
+
         const stopWebSocket = this.stop;
         const timeout = setTimeout(() => {
             this.logger.fatal('The Core Isn\'t Ready!');
@@ -59,8 +63,8 @@ class WebSocketServer {
 
                 if (message.initial) {
                     clearTimeout(iTimeout);
-                    if (message.who.toLowerCase() === 'core' && !connections['core']) {
-                        connections['core'] = WSS;
+                    if (message.who.toLowerCase() === corePrefix && !connections[corePrefix]) {
+                        connections[corePrefix] = WSS;
                         clearTimeout(timeout);
                         return WSS.send(parser.iParser(message.who));
                     }

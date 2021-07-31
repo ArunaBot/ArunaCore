@@ -33,7 +33,9 @@ class Main extends EventEmitter {
     constructor() {
         super();
         this.debug = true;
-        logger = new LoggerC({ debug: this.debug, prefix: 'CORE' });
+        this.ready = false;
+        this.prefix = 'CORE';
+        logger = new LoggerC({ debug: this.debug, prefix: this.prefix });
     }
 
     async start() {
@@ -48,16 +50,24 @@ class Main extends EventEmitter {
 
         const install = new installer();
 
-        if (!fs.existsSync(path.resolve(__dirname,'..','..','configs')) || !fs.existsSync(path.resolve(__dirname,'..','..','languages'))) {
+        if (!fs.existsSync(path.resolve(__dirname,'..','..','configs')) || !fs.existsSync(path.resolve(__dirname,'..','resources','languages'))) {
             config = await install.start(path.resolve(__dirname,'..','..','configs'), path.resolve(__dirname,'..','resources', 'languages'));
         } else {
             config = (await install.loadConfig(path.resolve(__dirname,'..','..','configs'))).arunacore;
         }
 
-        
+        this.config = config;
+
+        this.debug = config.arunacore.debug;
+
+        if (!this.debug || this.prefix !== config.arunacore.prefix) {
+            if (!this.debug) logger.debug('Disabling debug...');
+            logger = new LoggerC({ debug: this.debug, prefix: this.prefix });
+        }
+
         const loader = new ModuleLoader(logger);
         const parser = new ModuleParser(logger);
-        
+
         var moduleList;
 
         var load = await loader.load(path.resolve(__dirname,'modules')).catch((err) => {
@@ -78,8 +88,7 @@ class Main extends EventEmitter {
                 fs.writeFileSync(moduleList, '{}', { flag: 'a+', encoding: 'utf8' });
             } finally {
                 logger.info(`".moduleList" file created in '${moduleList.replace('.moduleList', '')}'.`);
-            }
-                
+            }    
         }
 
         const installedModules = await parser.getInstalledModules(moduleList);
@@ -109,7 +118,7 @@ class Main extends EventEmitter {
                 });
             }
         }
-        
+
         if (toLoad.length == 0) {
             logger.error('No Modules to Load! Shutting Down...');
             return process.exit(0);
@@ -155,22 +164,22 @@ class Main extends EventEmitter {
 
         logger.info('Initializing WebSocket Server...');
 
-        const wss = new WebSocketServer(this.debug, process.env.PORT || 3000);
+        const wss = new WebSocketServer(config.websocket.debug, config.websocket.port, config.websocket.host, config.websocket.prefix, this.prefix);
 
         const wsParser = await wss.start();
 
         this.wsParser = wsParser;
 
-        const coreWS = new WebSocket(`ws://localhost:${process.env.PORT || 3000}`);
+        const coreWS = new WebSocket(`ws://${config.websocket.host}:${config.websocket.port}`);
 
         this.coreWS = coreWS;
 
         coreWS.on('open', () => {
-            coreWS.send(':CORE 000 W.S.S. :EnableWS');
+            coreWS.send(`:${this.prefix} 000 W.S.S. :EnableWS`);
         });
 
         coreWS.on('message', (message) => {
-            if (message === ':W.S.S. 001 CORE :Welcome to ArunaCore!') {
+            if (message === `:W.S.S. 001 ${this.prefix} :Welcome to ArunaCore!`) {
                 this.continue = true;
                 return logger.info('WebSocket Server Started!');
             } else {
@@ -182,7 +191,7 @@ class Main extends EventEmitter {
 
         logger.info('Core Started!');
 
-        const moduleManager = await loader.start(toLoad, { port: process.env.PORT || 3000, host: 'localhost'});
+        const moduleManager = await loader.start(toLoad, { port: config.websocket.port, host: config.websocket.host});
         this.moduleManager = moduleManager;
 
         var total = toLoad.length;
@@ -199,6 +208,7 @@ class Main extends EventEmitter {
         await this.waiter(false);
 
         this.emit('ready', null);
+        this.ready = true;
     }
 
     webSocketMessageHandler(rawMessage) {
@@ -212,18 +222,22 @@ class Main extends EventEmitter {
             case '011':
                 break;
             case '010':
-                this.moduleManager.emit('WaitWS', message.who, true);
+                if (message.to !== this.prefix) {
+                    this.moduleManager.emit('WaitWS', message.who, true);
+                }
                 break;
             default:
                 break;
         }
-
     }
 
     /**
      * Stops the core, websocket and all modules.
      */
     async stop() {
+        if (!this.ready) {
+            return logger.error('The Core Isn\'t Started!');
+        }
         logger.warn('Stopping modules...');
         this.moduleManager.emit('stop', 'all');
         this.moduleManager.on('finishedAll', () => {
@@ -236,9 +250,9 @@ class Main extends EventEmitter {
 
         logger.warn('Stopping WebSocket Server...');
 
-        this.coreWS.send(':CORE 000 W.S.S. :DisableWS');
+        this.coreWS.send(`:${this.prefix} 000 W.S.S. :DisableWS`);
         this.coreWS.on('message', (message) => {
-            if (message === ':W.S.S. 002 CORE :Goodbye, ArunaCore!') {
+            if (message === `:W.S.S. 002 ${this.prefix} :Goodbye, ArunaCore!`) {
                 return this.continue = true;
             }
         });

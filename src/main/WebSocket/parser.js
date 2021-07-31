@@ -16,8 +16,9 @@
 */
 
 class WebSocketParser {
-    constructor(prefix) {
+    constructor(prefix, corePrefix) {
         this.prefix = prefix;
+        this.corePrefix = corePrefix;
     }
 
     parser(rawMessage) {
@@ -31,7 +32,7 @@ class WebSocketParser {
 
         if (destination.startsWith(':')) {
             params = destination.slice(2).split(/ +/g);
-            destination = 'CORE';
+            destination = this.corePrefix;
             hasTo = false;
         }
 
@@ -55,7 +56,7 @@ class WebSocketParser {
                 if (destination === this.prefix && params[0] === 'EnableWS') {
                     obj.initial = true;
                     return obj;
-                } else if (destination === this.prefix && params[0] === 'DisableWS' && sender === 'CORE') {
+                } else if (destination === this.prefix && params[0] === 'DisableWS' && sender === this.corePrefix) {
                     obj.final = true;
                     return obj;
                 }
@@ -88,7 +89,7 @@ class WebSocketParser {
      * @return {String} [formattedMessage]
      */
     mrParser(who) {
-        return `:${this.prefix} 010 CORE :${who}`;
+        return `:${this.prefix} 010 ${this.corePrefix} :${who}`;
     }
 
     /**

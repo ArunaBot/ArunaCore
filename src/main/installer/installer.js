@@ -17,6 +17,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const yaml = require('yaml');
 const axios = require('axios');
 const osLocale = require('os-locale');
 const pkg = require(path.resolve(__dirname, '..', '..', '..', 'package.json'));
@@ -25,6 +26,7 @@ const approveAllRegex = /(.*)/gi;
 
 var logger;
 var language; // The language!
+
 /**
  * Class for the installer
  */
@@ -77,6 +79,8 @@ class Installer {
                     this.stop = true;
                     return reject(language.class.start.errors.config.fail);
                 }
+            } else {
+                return resolve();
             }
 
             if (this.stop) return;
@@ -236,16 +240,26 @@ class Installer {
                 config.modules.debug = true;
             }
 
-            console.log(config);
-
             if (actualQuestion != numberOfQuestions) {
                 logger.error(language.class.start.errors.fatal.invalidQuestionNumber.replace('%s', numberOfQuestions).replace('%s', actualQuestion));
                 logger.fatal(language.class.start.errors.fatal.invalidQuestionNumber.replace('%s', numberOfQuestions).replace('%s', actualQuestion));
                 return reject(language.class.start.errors.fatal.invalidQuestionNumber.replace('%s', numberOfQuestions).replace('%s', actualQuestion));
             }
 
-            logger.info(language.class.start.success.message);
-            // return resolve(config);
+            logger.info(language.class.start.messages.generating);
+            
+            fs.mkdirSync(configPath, { recursive: true });
+            fs.writeFile(configPath + '/arunacore.yml', yaml.stringify(config), (err) => {
+                if (err) {
+                    logger.debug(err);
+                    logger.error(language.class.start.errors.fatal.writeConfigFile.replace('%s', configPath + '/arunacore.yml').replace('%s', JSON.stringify(err)));
+                    logger.fatal(language.class.start.errors.fatal.writeConfigFile.replace('%s', configPath + '/arunacore.yml').replace('%s', JSON.stringify(err)));
+                    return reject(language.class.start.errors.fatal.writeConfigFile.replace('%s', configPath + '/arunacore.yml').replace('%s', JSON.stringify(err)));
+                }
+                logger.info(language.class.start.success.configFileWritten.replace('%s', configPath + '/arunacore.yml'));
+                logger.info(language.class.start.success.message);
+                return resolve(config);
+            });
         });
     }
 
@@ -284,7 +298,6 @@ class Installer {
     async loadConfig(folderPath = path.resolve(__dirname, '..', '..', 'resources', 'defaultConfigs')) {
         // eslint-disable-next-line no-async-promise-executor
         return new Promise(async (resolve, reject) => {
-            const yaml = require('yaml');
             const config = {};
 
             if (!folderPath || !fs.existsSync(folderPath)) {
