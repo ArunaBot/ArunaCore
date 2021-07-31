@@ -21,8 +21,8 @@
  */
 
 const path = require('path');
-var chalk = require('chalk');
-var dateParser = require(path.resolve(__dirname,'DateParser'));
+const chalk = require('chalk');
+const dateParser = require(path.resolve(__dirname,'DateParser'));
 
 /**
  * Logger Class
