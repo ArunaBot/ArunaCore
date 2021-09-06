@@ -163,9 +163,9 @@ class ModuleLoader {
      * @param {Object} [webSocketProperties]
      * @returns {Promise}
      */
-    async start(modules, webSocketProperties) {
+    async start(modules, webSocketProperties, debug) {
         this.logger.info('Starting Modules...');
-        const moduleManager = new ModuleManager();
+        const moduleManager = new ModuleManager(debug);
         // eslint-disable-next-line no-async-promise-executor
         return new Promise(async (resolve) => {
             for (var i = 0; i < modules.length; i++) {

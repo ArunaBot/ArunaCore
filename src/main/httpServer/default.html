@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ArunaCore: All set up!</title>
+    </head>
+    <body>
+        <h1>Your installation of ArunaCore has been successful!</h1>
+        <h2>To change this page change: <code>/src/main/httpServer/default.html</code> to your preffered html!</h2>
+        <footer>
+            <h3>You're running on ArunaCore version: <span id='ArunaCoreVersion'></span></h3>
+        </footer>
+    </body>
+    <script>
+        function fillWithError() {
+            document.getElementById('ArunaCoreVersion').innerText = 'FetchError!';
+        }
+
+        fetch('/arunaData').then(async function(response) {
+            if (response.ok) {
+                return response.json().then(function(json) {
+                    document.getElementById('ArunaCoreVersion').innerText = json.version;
+                });
+            } else {
+                fillWithError();
+            }
+        }).catch(function(error) {
+            fillWithError();
+        });
+    </script>
+</html>

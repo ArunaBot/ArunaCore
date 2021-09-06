@@ -25,10 +25,11 @@ const { logger: LoggerC } = require(path.resolve(__dirname, '..', 'Utils'));
  * Module Manager
  */
 class ModuleManager extends EventEmitter {
-    constructor() {
+    constructor(debug) {
         super();
+        this.debug = debug ? debug : false;
         this.modules = {};
-        this.logger = new LoggerC({ debug: true, prefix: 'ModuleManager'});
+        this.logger = new LoggerC({ debug: this.debug, prefix: 'ModuleManager'});
         this.redefine = (moduleList) => { this.modules = moduleList; };
     }
 
@@ -110,7 +111,7 @@ class ModuleManager extends EventEmitter {
                 finished = true;
                 if (child.killed) return;
                 if (code === 0) {
-                    this.logger.info(`Module ${packageJson.name} finished!`);
+                    this.logger.warn(`Module ${packageJson.name} finished!`);
                 } else {
                     sucess = false;
                     this.logger.error(`Module ${packageJson.name} finished with code ${code}...`, code);

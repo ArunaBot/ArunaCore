@@ -16,6 +16,5 @@
 */
 
 module.exports = {
-    HTTPServer: require('./server'),
-    manager: require('./manager')
+    HTTPServer: require('./manager')
 };

@@ -18,23 +18,27 @@
 const express = require('express');
 const path = require('path');
 const http = require('http');
+const EventEmitter = require('events');
 const { logger: LoggerC } = require(path.resolve(__dirname, '..', 'Utils'));
 
 var logger;
-
-class HTTPServer {
-    constructor(host, port, prefix, debug, ws) {
+var exp;
+class HTTPServer extends EventEmitter {
+    constructor(debug, host, port, prefix, corePrefix, ws) {
+        super();
         this.ws = ws;
-        this.host = host;
-        this.port = port;
-        this.debug = debug;
-        this.prefix = prefix;
+        this.host = host || 'localhost';
+        this.port = port || 8080;
+        this.debug = debug || false;
+        this.prefix = prefix || 'IHTTP';
         this.isRunning = false;
         logger = new LoggerC({ prefix: this.prefix, debug: this.debug });
+        this.logger = logger;
+        exp = express();
+        this.exp = exp;
     }
 
     start() {
-        const exp = express();
         return new Promise((resolve, reject) => {
             const server = http.createServer(exp);
 
@@ -45,8 +49,9 @@ class HTTPServer {
 
             server.listen(this.port, () => {
                 this.isRunning = true;
-                logger.info(`HTTP Server started on port ${this.port}`);
+                logger.info(`Internal HTTP Server started on port ${this.port}`);
                 this.app = server;
+                this.emit('ready');
                 resolve(this.app);
             });
         });
@@ -57,7 +62,6 @@ class HTTPServer {
             return this.app;
         }
 
-        
         return this.start();
     }
 }

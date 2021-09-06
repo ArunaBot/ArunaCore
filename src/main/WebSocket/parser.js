@@ -22,6 +22,9 @@ class WebSocketParser {
     }
 
     parser(rawMessage) {
+        if (typeof rawMessage === 'object') {
+            rawMessage = rawMessage.toString();
+        }
         const ircMessage = rawMessage.split(/ +/g);
         const sender = ircMessage[0].substr(1);
         const command = ircMessage[1];

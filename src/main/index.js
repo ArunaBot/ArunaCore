@@ -189,9 +189,25 @@ class Main extends EventEmitter {
 
         await this.waiter(false);
 
+        if (config.http.enabled) {
+            logger.info('Initializing HTTP Server...');
+
+            const IHTTPC = new HTTPServer(config.http.debug, config.http.host, config.http.port, config.http.prefix, this.prefix, coreWS);
+
+            const IHTTP = await IHTTPC.start();
+
+            this.IHTTP = IHTTP;
+
+            IHTTP.on('ready', () => {
+                this.continue = true;
+            });
+
+            await this.waiter(false);
+        }
+
         logger.info('Core Started!');
 
-        const moduleManager = await loader.start(toLoad, { port: config.websocket.port, host: config.websocket.host});
+        const moduleManager = await loader.start(toLoad, { port: config.websocket.port, host: config.websocket.host}, this.debug);
         this.moduleManager = moduleManager;
 
         var total = toLoad.length;
@@ -219,12 +235,12 @@ class Main extends EventEmitter {
         if (!message || typeof message !== 'object') return;
 
         switch (message.command) {
-            case '011':
-                break;
             case '010':
                 if (message.to !== this.prefix) {
                     this.moduleManager.emit('WaitWS', message.who, true);
                 }
+                break;
+            case '011':
                 break;
             default:
                 break;
