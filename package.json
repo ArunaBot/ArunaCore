@@ -23,25 +23,25 @@
   "homepage": "https://github.com/ArunaBot/ArunaCore#readme",
   "engines": {
     "npm": "please-use-yarn",
-    "node": ">=12.10.x < 15.x",
+    "node": ">=12.20.x < 15.x",
     "yarn": ">= 1.22.x"
   },
   "dependencies": {
     "adm-zip": "^0.5.5",
-    "axios": "^0.21.1",
-    "chalk": "^4.1.1",
+    "axios": "^0.21.3",
+    "chalk": "^4.1.2",
     "del": "^6.0.0",
     "express": "^4.17.1",
-    "mongoose": "^5.13.3",
+    "mongoose": "^6.0.4",
     "mysql": "^2.18.1",
     "nodemon": "^2.0.12",
     "os-locale": "^5.0.0",
-    "prompt": "^1.1.0",
+    "prompt": "^1.2.0",
     "semver": "^7.3.5",
-    "ws": "^7.5.3",
+    "ws": "^8.2.1",
     "yaml": "^1.10.2"
   },
   "devDependencies": {
-    "eslint": "^7.31.0"
+    "eslint": "^7.32.0"
   }
 }
