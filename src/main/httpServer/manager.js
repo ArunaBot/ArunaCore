@@ -11,6 +11,7 @@ class HTTPManager extends HTTPServer {
         super(debug, host, port, prefix, corePrefix, ws);
         wsParser = new webSocketParser(this.prefix, this.corePrefix);
         this.existingRoutes = [];
+        this.debug = debug;
     }
 
     /**
@@ -22,7 +23,11 @@ class HTTPManager extends HTTPServer {
         });
 
         this.exp.get('/arunaData', (req, res) => {
-            res.send({ version: pkg.version });
+            res.send({
+                version: pkg.version,
+                fullpath: __dirname,
+                debug: this.debug,
+            });
         });
 
         return await super.start();
