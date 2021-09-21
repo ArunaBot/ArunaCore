@@ -75,7 +75,7 @@ class ModuleLoader {
                 .then(async (aModule) => {
                     this.logger.info(`Installing Module: ${aModule.name}...`);
 
-                    if (!semver.satisfies(pkg.version, aModule.requireCore)) {
+                    if (aModule.requireCore && !semver.satisfies(pkg.version, aModule.requireCore)) {
                         const ver = `The ${aModule.name} module requires a higher version of the core (${semver.minVersion(aModule.requireCore)}+). ` + 
                         'Please upgrade your ArunaCore to run this module.';
                         this.logger.warn(ver);
@@ -87,14 +87,14 @@ class ModuleLoader {
                     var dependencies = '';
                     var devDependencies = '';
 
-                    if (aModule.dependencies[0]) {
+                    if (aModule.dependencies && aModule.dependencies[0]) {
                         aModule.dependencies.forEach((element) => {
                             dependencies = dependencies + ` ${Object.entries(element)[0][0]}@${Object.entries(element)[0][1]}`;
                         });
                         delete aModule.dependencies;
                     }
 
-                    if (aModule.devDependencies[0]) {
+                    if (aModule.devDependencies && aModule.devDependencies[0]) {
                         aModule.devDependencies.forEach((element) => {
                             devDependencies = devDependencies + ` ${Object.entries(element)[0][0]}@${Object.entries(element)[0][1]}`;
                         });
@@ -103,7 +103,7 @@ class ModuleLoader {
 
                     await new pkgJG().gen(aModule, moduleDir.replace('.arunamodule', ''));
 
-                    if (dependencies !== undefined) {
+                    if (dependencies !== undefined && dependencies !== '') {
                         if (dependencies.startsWith(' ')) dependencies = dependencies.replace(' ', '');
 
                         this.logger.info(`Installing ${aModule.name} Dependencies...`);
@@ -111,7 +111,7 @@ class ModuleLoader {
                         await this.installDeps(dependencies, moduleDir.replace('.arunamodule', ''), false);
                     }
 
-                    if (devDependencies !== undefined) {
+                    if (devDependencies !== undefined && devDependencies !== '') {
                         if (devDependencies.startsWith(' ')) devDependencies = devDependencies.replace(' ', '');
 
                         this.logger.info(`Installing ${aModule.name} Dev Dependencies...`);
