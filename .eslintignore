@@ -1,6 +1,0 @@
-.vscode/
-dependencies/
-
-.npmrc
-.yarnrc
-yarn.lock

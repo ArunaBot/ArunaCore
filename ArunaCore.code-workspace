@@ -1,0 +1,37 @@
+{
+	"folders": [
+		{
+			"name": "API",
+			"path": "api"
+		},
+		{
+			"name": "Bundle",
+			"path": "bundle"
+		},
+		{
+			"name": "CLI",
+			"path": "cli"
+		},
+		{
+			"name": "Common",
+			"path": "common"
+		},
+		{
+			"name": "Database",
+			"path": "database"
+		},
+		{
+			"name": "HTTP",
+			"path": "http"
+		},
+		{
+			"name": "WebSocket",
+			"path": "websocket"
+		},
+		{
+			"name": "Root",
+			"path": "."
+		}
+	],
+	"settings": {}
+}

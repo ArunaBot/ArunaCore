@@ -1,0 +1,6 @@
+{
+  "compilerOptions": {
+    "outDir": "build",
+  },
+  "exclude": ["node_modules", "build", "tsconfig.json"]
+}
