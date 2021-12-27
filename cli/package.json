@@ -29,5 +29,8 @@
     "eslint-plugin-react": "^7.26.1",
     "prettier": "^2.4.1",
     "typescript": "^4.4.4"
+  },
+  "dependencies": {
+    "@arunabot/core-common": "file:../common"
   }
 }
