@@ -76,7 +76,7 @@ const files = [{
     "no-empty-pattern": ["off"],
     "no-template-curly-in-string": "error",
     "no-unsafe-negation": "error",
-    "no-undef": ["error", 2],
+    "no-undef": ["error"],
     "no-unused-vars": 1,
     "no-empty": [
       "error",

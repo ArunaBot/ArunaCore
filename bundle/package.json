@@ -5,6 +5,7 @@
 	"main": "index.js",
 	"scripts": {
 		"setup": "node src/scripts/install.js && npm install",
+		"eslint:fix": "node src/scripts/runESLint.js",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"repository": {
@@ -29,7 +30,11 @@
 		"eslint-plugin-prettier": "^4.0.0",
 		"eslint-plugin-promise": "^5.1.1",
 		"eslint-plugin-react": "^7.26.1",
-		"prettier": "^2.4.1"
+		"prettier": "^2.4.1",
+		"@types/node": "^17.0.5"
 	},
-	"dependencies": {}
+	"dependencies": {
+		"chalk": "^5.0.0",
+		"color-convert": "^2.0.1"
+	}
 }
