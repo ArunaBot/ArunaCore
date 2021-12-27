@@ -1,9 +1,5 @@
-export interface LoggerOption {
-  debug?: Boolean,
-  prefix?: String,
-  defaultLevel?: LoggerLevel
-}
 
+/* eslint-disable no-unused-vars */
 export enum LoggerLevel {
   INFO = 0,
   LOG = 0,
@@ -13,4 +9,10 @@ export enum LoggerLevel {
   SEVERE = 2,
   FATAL = 3,
   DEBUG = 4
+}
+
+export interface LoggerOption {
+  debug?: boolean,
+  prefix?: string,
+  defaultLevel?: LoggerLevel
 }

@@ -12,7 +12,7 @@ for (const part of parts) {
 	bundle.dependencies = { ...bundle.dependencies, ...dependencies };
 	execSync('npm install', { cwd: path.join(__dirname, "..", "..", "..", part) });
 	console.log(`Installed ${part}`);
-	delete bundle.dependencies["@aruna/core-common"];
+	delete bundle.dependencies["@arunabot/core-common"];
 }
 
 fs.writeFileSync(path.join(__dirname, "..", "..", "package.json"), JSON.stringify(bundle, null, "\t"), { encoding: "utf8" });
