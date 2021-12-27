@@ -1,41 +1,4 @@
-const path = require("path");
-const fs = require("fs");
-
-const parts = ["api", "cli", "common", "core", "database", "http", "websocket"];
-
-const folders = [{
-  path: "src",
-  subFolders: [{
-    path: "interfaces",
-    subFolders: [],
-  }],
-}, {
-  path: "tests",
-  subFolders: [],
-}];
-
-const files = [{
-    name: '.prettierc',
-    content: `{
-  "tabWidth": 2,
-  "useTabs": false,
-  "trailingComma": "all",
-  "printWidth": 100
-}`,
-  }, {
-    name: 'tsconfig.json',
-    content: `{
-  "compilerOptions": {
-    "outDir": "build",
-  },
-  "exclude": ["node_modules", "build", "tsconfig.json"]
-}`,
-  }, {
-    name: '.eslintignore',
-    content: `build/**/*`,
-  }, {
-    name: '.eslintrc',
-    content: `{
+{
   "rules": {
     "@typescript-eslint/ban-ts-ignore": ["off"],
     "@typescript-eslint/explicit-function-return-type": ["error"],
@@ -129,36 +92,4 @@ const files = [{
     "sourceType": "module"
   },
   "plugins": ["prettier", "@typescript-eslint"]
-}`,
-  }, {
-    name: 'src/main.ts',
-    content: '',
-  }, {
-    name: 'src/interfaces/index.ts',
-    content: ''
-  }
-];
-
-
-
-for (const part of parts) {
-    function createFolder(dir, thePath) {
-      if (!fs.existsSync(path.join(__dirname,  "..", "..", "..", part, thePath))) {
-        fs.mkdirSync(path.join(__dirname,  "..", "..", "..", part, thePath));
-      }
-      
-      fs.writeFileSync(path.join(__dirname,  "..", "..", "..", part, thePath, '.gitkeep'), '', { encoding: "utf8" })
-      
-      for (var i = 0; i < dir.subFolders.length; i++) {
-        createFolder(dir.subFolders[i], path.join(thePath, dir.subFolders[i].path));
-      }
-    }
-
-    for (var i = 0; i < folders.length; i++) {
-      createFolder(folders[i], folders[i].path);
-    }
-
-    for (var i = 0; i < files.length; i++) {
-      fs.writeFileSync(path.join(__dirname,  "..", "..", "..", part, files[i].name), files[i].content, { encoding: "utf8" });
-    }
 }

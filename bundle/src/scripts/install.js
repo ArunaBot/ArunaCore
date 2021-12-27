@@ -3,7 +3,7 @@ const bundle = require("../../package.json");
 const path = require("path");
 const fs = require("fs");
 
-const parts = ["api", "cli", "common", "database", "http", "websocket"];
+const parts = ["api", "cli", "common", "core", "database", "http", "websocket"];
 
 for (const part of parts) {
 	const { devDependencies, dependencies } = require(path.join("..", "..",  "..", part, "package.json"));

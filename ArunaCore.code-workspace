@@ -17,6 +17,10 @@
 			"path": "common"
 		},
 		{
+			"name": "Core",
+			"path": "core",
+		},
+		{
 			"name": "Database",
 			"path": "database"
 		},
