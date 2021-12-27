@@ -4,6 +4,9 @@
   "description": "TODO",
   "main": "index.js",
   "scripts": {
+    "dev": "npx ts-node index.ts",
+    "build": "tsc",
+    "lint": "eslint -c .eslintrc --fix ./src/**/*.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

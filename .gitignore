@@ -117,3 +117,11 @@ modules/
 # ArunaCore Auto Generated Content
 *.moduleList
 configs/
+
+# Misc
+.breakpoints
+.replit
+package.json
+package-lock.json
+!*/package.json
+!*/package-lock.json
