@@ -31,10 +31,12 @@
 		"eslint-plugin-promise": "^5.1.1",
 		"eslint-plugin-react": "^7.26.1",
 		"prettier": "^2.4.1",
-		"@types/node": "^17.0.5"
+		"@types/node": "^17.0.19",
+		"@types/ws": "^8.2.3"
 	},
 	"dependencies": {
 		"chalk": "^5.0.0",
-		"color-convert": "^2.0.1"
+		"color-convert": "^2.0.1",
+		"ws": "^8.5.0"
 	}
 }
