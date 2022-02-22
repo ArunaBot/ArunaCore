@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "lib": ["es6", "dom", "es2017"],
+    "esModuleInterop": true,
     "target": "es6",
     "module": "commonjs",
     "outDir": "build",

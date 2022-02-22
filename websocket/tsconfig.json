@@ -1,5 +1,9 @@
 {
+  "baseUrl": "types",
+  "typeRoots": ["types"],
+  "allowSyntheticDefaultImports": true,
   "compilerOptions": {
+    "esModuleInterop": true,
     "outDir": "build",
   },
   "exclude": ["node_modules", "build", "tsconfig.json"]
