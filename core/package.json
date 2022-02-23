@@ -3,7 +3,7 @@
   "version": "1.0.0-ALPHA.0",
   "description": "TODO",
   "main": "dist/index.js",
-	"types": "src/index.ts",
+  "types": "src/index.ts",
   "scripts": {
     "dev": "npx ts-node index.ts",
     "build": "tsc",
