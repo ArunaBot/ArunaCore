@@ -35,6 +35,11 @@
 		"@types/ws": "^8.2.3"
 	},
 	"dependencies": {
+		"arunacore-api": "file:../api",
+		"@arunabot/core-cli": "file:../cli",
+		"@arunabot/core-database": "file:../database",
+		"@arunabot/core-http": "file:../http",
+		"@arunabot/core-websocket": "file:../websocket",
 		"chalk": "^5.0.0",
 		"color-convert": "^2.0.1",
 		"ws": "^8.5.0"
