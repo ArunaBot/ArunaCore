@@ -1,11 +1,11 @@
-import IConnection from './interfaces/iconnection';
-import IMessage from './interfaces/imessage';
-import Parser from './utils/parser';
+import { IConnection } from './interfaces';
+import { IMessage } from 'arunacore-api';
+import { WebSocketParser } from '@arunabot/core-common';
 import * as wss from 'ws';
 
-class Socket {
+export class Socket {
   private ws: wss.Server;
-  private parser = new Parser({});
+  private parser = new WebSocketParser({});
   private connections: IConnection[] = [];
 
   constructor(port: number) {
@@ -57,5 +57,3 @@ class Socket {
     connection.close(code || 0, reason);
   }
 }
-
-export default Socket;

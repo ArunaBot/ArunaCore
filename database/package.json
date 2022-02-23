@@ -2,7 +2,8 @@
   "name": "@arunabot/core-database",
   "version": "1.0.0-ALPHA.0",
   "description": "TODO",
-  "main": "index.js",
+  "main": "dist/index.js",
+	"types": "src/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

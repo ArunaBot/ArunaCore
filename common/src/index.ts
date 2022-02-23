@@ -1,4 +1,5 @@
 import 'reflect-metadata';
 
-export * from './interfaces/index';
-export * from './logger/index';
+export * from './interfaces';
+export * from './websocket';
+export * from './logger';

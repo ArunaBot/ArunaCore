@@ -1,6 +1,6 @@
-import IMessage from '../interfaces/imessage';
+import { IMessage } from 'arunacore-api';
 
-class Parser {
+export class WebSocketParser {
   private options: JSON;
 
   constructor(options) {
@@ -43,5 +43,3 @@ class Parser {
     return null;
   }
 }
-
-export default Parser;

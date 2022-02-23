@@ -2,7 +2,8 @@
   "name": "@arunabot/core-core",
   "version": "1.0.0-ALPHA.0",
   "description": "TODO",
-  "main": "index.js",
+  "main": "dist/index.js",
+	"types": "src/index.ts",
   "scripts": {
     "dev": "npx ts-node index.ts",
     "build": "tsc",
