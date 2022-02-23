@@ -26,11 +26,20 @@ const files = [{
 }`,
 }, {
   name: 'tsconfig.json',
-  content: `{
-  "compilerOptions": {
-    "outDir": "build",
-  },
-  "exclude": ["node_modules", "build", "tsconfig.json"]
+  content: `{  {
+      "allowSyntheticDefaultImports": true,
+      "compilerOptions": {
+        "lib": ["ES6", "DOM", "ES2015", "ES2017"],
+        "esModuleInterop": true,
+        "target": "ES6",
+        "module": "commonjs",
+        "removeComments": true,
+        "outDir": "build",
+        "types": ["node", "chalk"]
+      },
+      "exclude": ["node_modules", "build", "tsconfig.json"]
+    }
+  
 }`,
 }, {
   name: '.eslintignore',

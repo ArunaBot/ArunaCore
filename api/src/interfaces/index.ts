@@ -1,1 +1,1 @@
-export * from './imessage';
+export default null;

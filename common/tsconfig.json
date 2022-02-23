@@ -1,9 +1,11 @@
 {
+  "allowSyntheticDefaultImports": true,
   "compilerOptions": {
-    "lib": ["es6", "dom", "es2017"],
+    "lib": ["ES6", "DOM", "ES2015", "ES2017"],
     "esModuleInterop": true,
-    "target": "es6",
+    "target": "ES6",
     "module": "commonjs",
+    "removeComments": true,
     "outDir": "build",
     "types": ["node", "chalk"]
   },

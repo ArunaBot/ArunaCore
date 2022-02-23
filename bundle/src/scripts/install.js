@@ -16,3 +16,5 @@ for (const part of parts) {
 }
 
 fs.writeFileSync(path.join(__dirname, '..', '..', 'package.json'), JSON.stringify(bundle, null, '\t'), { encoding: 'utf8' });
+
+execSync('npm install', { cwd: path.join(__dirname, '..', '..') });

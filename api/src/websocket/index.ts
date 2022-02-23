@@ -1,1 +1,1 @@
-export * from './WebSocket';
+export * from './WebSocketClient';
