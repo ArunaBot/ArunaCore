@@ -2,9 +2,12 @@
   "name": "arunacore-api",
   "version": "1.0.0-ALPHA.0",
   "description": "TODO",
-  "main": "dist/index.js",
+  "main": "build/src/index.js",
   "types": "src/index.ts",
   "scripts": {
+    "start": "npm run build && node build/",
+    "postinstall": "npm run build",
+    "build": "npx tsc --build && npx ts-project-bundle --out=out",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -18,6 +21,7 @@
   },
   "homepage": "https://github.com/ArunaBot/ArunaCore#readme",
   "devDependencies": {
+    "@types/ws": "^8.5.0",
     "@typescript-eslint/eslint-plugin": "^5.2.0",
     "@typescript-eslint/parser": "^5.2.0",
     "eslint": "^7.32.0",
@@ -29,6 +33,10 @@
     "eslint-plugin-promise": "^5.1.1",
     "eslint-plugin-react": "^7.26.1",
     "prettier": "^2.4.1",
+    "ts-project-bundle": "^0.0.10",
     "typescript": "^4.4.4"
+  },
+  "dependencies": {
+    "ws": "^8.5.0"
   }
 }

@@ -2,12 +2,12 @@
   "name": "@arunabot/core-core",
   "version": "1.0.0-ALPHA.0",
   "description": "TODO",
-  "main": "dist/index.js",
+  "main": "build/index.js",
   "types": "src/index.ts",
   "scripts": {
-    "dev": "npx ts-node index.ts",
-    "build": "tsc",
-    "lint": "eslint -c .eslintrc --fix ./src/**/*.ts",
+    "start": "npm run build && node build/",
+    "postinstall": "npm run build",
+    "build": "npx tsc -p .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

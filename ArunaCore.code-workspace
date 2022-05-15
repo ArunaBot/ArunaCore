@@ -13,10 +13,6 @@
 			"path": "cli"
 		},
 		{
-			"name": "Common",
-			"path": "common"
-		},
-		{
 			"name": "Core",
 			"path": "core",
 		},

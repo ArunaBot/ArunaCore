@@ -1,5 +1,5 @@
 import { IConnection } from './interfaces';
-import { IMessage, Logger, WebSocketParser } from '@arunabot/core-common';
+import { IMessage, Logger, WebSocketParser } from 'arunacore-api';
 import semver from 'semver';
 import * as wss from 'ws';
 
@@ -7,18 +7,19 @@ export class Socket {
   private ws: wss.Server;
   private logger: Logger;
   private timeouts: any[] = [];
+  private pingLoopTimeout: any;
   private parser = new WebSocketParser({});
   private connections: IConnection[] = [];
 
   constructor(port: number, logger: Logger) {
     this.ws = new wss.Server({ port: port }); // Creates a new websocket server
-    this.ws.on('connection', this.onConnection); // When a connection is made, call the onConnection function
+    this.ws.on('connection', (ws) => { this.onConnection(ws); }); // When a connection is made, call the onConnection function
     this.logger = logger;
     this.pingLoop();
   }
 
   private onConnection(ws: wss.WebSocket):void {
-    ws.on('message', this.onMessage);
+    ws.on('message', (message) => this.onMessage({ data: message, target: ws, type: '' }));
     setTimeout(() => {
       this.connections.forEach((connection: IConnection) => {
         if (connection.connection === ws) return;
@@ -36,7 +37,9 @@ export class Socket {
   }
 
   private async onMessage(message: wss.MessageEvent): Promise<void> {
-    const data: IMessage = this.parser.parse(message.data.toString());
+    const data: IMessage|null = this.parser.parse(message.data.toString());
+
+    if (data == null) return;
 
     const conectionsFounded = this.connections.find((connection: IConnection) => connection.id === data.from);
 
@@ -79,8 +82,8 @@ export class Socket {
         const coreMinimumVersion: string = info.args[1]; // Minimum version
         const coreMaximumVersion: string = info.args[2]; // Maximum version
 
-        if (!semver.satisfies(process.env.npm_package_version, `>=${coreMinimumVersion} <=${coreMaximumVersion}`)) {
-          ws.close(505, this.parser.toString(this.parser.format('arunacore', '505', ['invalid', 'version'], info.from))); // closes the connection with the user, Message example: :arunacore 505 :invalid version [from-id]
+        if (!semver.satisfies(process.env.npm_package_version || '', `>=${coreMinimumVersion} <=${coreMaximumVersion}`)) {
+          ws.close(1000, this.parser.toString(this.parser.format('arunacore', '505', ['invalid', 'version'], info.from))); // closes the connection with the user, Message example: :arunacore 505 :invalid version [from-id]
           return;
         }
 
@@ -121,10 +124,19 @@ export class Socket {
   }
 
   public finishWebSocket():void {
+    this.logger.warn('Finishing Connections...');
     this.connections.forEach((connection: IConnection) => {
-      this.close(connection.connection, 255, 'ArunaCore is shutting down');
+      this.close(connection.connection, 'ArunaCore is shutting down', 1012);
     });
+    this.logger.warn('Stopping Ping Loop...');
+    clearTimeout(this.pingLoopTimeout);
+    this.logger.warn('Stopping Timeouts...');
+    this.timeouts.forEach((timeoutO: any) => {
+      clearTimeout(timeoutO.timeout);
+    });
+    this.logger.warn('Stopping WebSocket Server...');
     this.ws.close();
+    this.logger.info('WebSocket Stopped! Goodbye O/');
   }
 
   /**
@@ -149,7 +161,7 @@ export class Socket {
    * Call the function massPing every 30 seconds to check if the connections are alive
    */
   private pingLoop():void {
-    setInterval(() => this.massPing(), 30000);
+    this.pingLoopTimeout = setInterval(() => this.massPing(), 30000);
   }
 
   /**
@@ -168,7 +180,7 @@ export class Socket {
     });
   }
 
-  private close(connection: wss.WebSocket, code?: number, reason?: string):void {
-    connection.close(code || 0, reason);
+  private close(connection: wss.WebSocket, reason?: string, code = 1000):void {
+    connection.close(code, reason);
   }
 }

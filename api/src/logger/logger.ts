@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import chalk from 'chalk';
 import { LoggerOption, LoggerLevel } from '../interfaces';
-const convert = require('color-convert');
+import chalk from 'chalk';
 
 function getTimeRaw(): string {
   return `${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}`;
@@ -20,39 +19,43 @@ function getTime(): string {
 
 export class Logger {
   private debugActive = false;
-  private prefix: string = null;
+  private prefix = '';
 
   constructor(options: LoggerOption) {
     this.debugActive = options.debug ? options.debug : false;
-    this.prefix = options.prefix ? options.prefix : null;
+    this.prefix = options.prefix ? options.prefix : '';
   }
 
-  fatal(message: string, args?: string[]): void {
+  private getPrefix(): string {
+    return this.prefix === '' ? '' : `${chalk.gray(`[${this.prefix}]`)}`;
+  }
+
+  fatal(message: string|Error, args?: string[]|Error|Error[]): void {
     // eslint-disable-next-line max-len
-    console.trace(chalk.bgWhite(chalk.red(message.toString().split(' ')[0].toLowerCase().includes('error') ? `[${getTime()}] Fatal ${message}` : `[${getTime()}] Fatal: ${message}`)));
+    console.trace(chalk.bgWhite(this.getPrefix() + chalk.red(`[${getTime()}] Fatal${message.toString().split(' ')[0].toLowerCase().includes('error') ? '' : ':'} ${message}`)));
     process.exit(5);
   }
 
-  error(message: string, args?: string[]): void {
+  error(message: string|Error, args?: string[]|Error|Error[]): void {
     // eslint-disable-next-line max-len
-    console.error(chalk.red(message.toString().split(' ')[0].toLowerCase().includes('error') ? `[${getTime()}] ${message}` : `[${getTime()}] Error: ${message}`));
+    console.error(this.getPrefix() + chalk.red(`[${getTime()}] ${message.toString().split(' ')[0].toLowerCase().includes('error') ? '' : 'Error:'} ${message}`));
   }
 
-  warn(message: string, args?: string[]): void {
-    console.warn(convert.keyword('orange')(`[${getTime()}] Warn: ${message}`));
+  warn(message: string|Error, args?: string[]|Error|Error[]): void {
+    console.warn(this.getPrefix() + chalk.keyword('orange')(`[${getTime()}] Warn: ${message}`));
   }
 
-  info(message: string, args?: string[]): void {
-    console.info(chalk.blueBright(`[${getTime()}] `) + `Info: ${message}`);
+  info(message: string|Error, args?: string[]|Error|Error[]): void {
+    console.info(this.getPrefix() + chalk.blueBright(`[${getTime()}] `) + `Info: ${message}`);
   }
 
-  debug(message: string, args?: string[]): void {
+  debug(message: string|Error, args?: string[]|Error|Error[]): void {
     if (this.debugActive) {
-      console.debug(chalk.gray(`[${getTime()}] Debug: `) + chalk.hex('#AAA')(message));
+      console.debug(this.getPrefix() + chalk.gray(`[${getTime()}] Debug: `) + chalk.hex('#AAA')(message));
     }
   }
 
-  log(message: string, level?: LoggerLevel, args?: string[]): void {
+  log(message: string|Error, level?: LoggerLevel, args?: string[]|Error|Error[]): void {
     switch (level) {
       case LoggerLevel.DEBUG:
         this.debug(message, args);

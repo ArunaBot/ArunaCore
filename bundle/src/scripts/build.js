@@ -7,7 +7,7 @@ const { argv } = require('process');
 var steps = 2; var i = 0;
 if (argv.includes('clean')) steps++;
 if (argv.includes('copyonly')) steps--;
-const dirs = ['api', 'cli', 'common', 'core', 'database', 'http', 'websocket', 'bundle'];
+const dirs = ['api', 'cli', 'core', 'database', 'http', 'websocket', 'bundle'];
 
 const verbose = argv.includes('verbose') || argv.includes('v');
 
@@ -34,9 +34,14 @@ if (argv.includes('clean')) {
   console.log(`[${++i}/${steps}] Cleaning...`);
   dirs.forEach((a) => {
     var d = '../' + a + '/build';
+    var out = '../' + a + '/out';
     if (fs.existsSync(d)) {
-      fs.rmSync(d, { recursive: true });
+      fs.rmdirSync(d, { recursive: true });
       if (verbose) console.log(`Deleted ${d}!`);
+    }
+    if (fs.existsSync(out)) {
+      fs.rmdirSync(out, { recursive: true });
+      if (verbose) console.log(`Deleted ${out}!`);
     }
   });
 }
@@ -44,6 +49,9 @@ if (argv.includes('clean')) {
 console.log(`[${++i}/${steps}] Copying src files...`);
 
 dirs.forEach((a) => {
+  if (argv.includes('test')) {
+    copyRecursiveSync('../' + a + '/test', 'build/' + a + '/test');
+  }
   copyRecursiveSync('../' + a + '/src', 'build/' + a + '/src');
   if (verbose) console.log(`Copied ${'../' + a + '/build'} -> ${'build/' + a + '/src'}!`);
 });
