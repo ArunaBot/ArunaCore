@@ -42,7 +42,6 @@
 	"dependencies": {
 		"arunacore-api": "file:../api",
 		"@arunabot/core-cli": "file:../cli",
-		"@arunabot/core-database": "file:../database",
 		"@arunabot/core-http": "file:../http",
 		"@arunabot/core-websocket": "file:../websocket",
 		"chalk": "^4.1.2",

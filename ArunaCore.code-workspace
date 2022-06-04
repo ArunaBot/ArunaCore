@@ -17,10 +17,6 @@
 			"path": "core",
 		},
 		{
-			"name": "Database",
-			"path": "database"
-		},
-		{
 			"name": "HTTP",
 			"path": "http"
 		},
