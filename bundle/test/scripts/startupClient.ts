@@ -17,6 +17,7 @@ function runStartupClient({ loggerClient, index }: ITestOptions): Promise<ITestR
     });
 
     client.on('close', (code, reason) => {
+      if (code === 1000) return;
       if (code === 1012) {
         loggerClient.debug('Server Shutdown, Client Stopped');
         return;

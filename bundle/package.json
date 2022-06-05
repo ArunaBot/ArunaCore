@@ -9,7 +9,7 @@
 		"eslint:fix": "node src/scripts/runESLint.js",
 		"build": "node src/scripts/build.js",
 		"pretest": "npm run eslint:fix && npm run build",
-		"test": "npm run setup && npm run build -- test && node build/bundle/test/test.js"
+		"test": "npm run build -- clean && npm run setup && npm run build -- test && node build/bundle/test/test.js"
 	},
 	"repository": {
 		"type": "git",
