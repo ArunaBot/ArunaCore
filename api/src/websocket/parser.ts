@@ -15,7 +15,7 @@ export class WebSocketParser {
     if (split.length > 1) {
       const parsedArg0: string[] = split[0].split('-');
 
-      var from: string = split[0];
+      var from: string = split[0].substring(1);
       var type: string|undefined;
 
       if (parsedArg0.length >= 2) {
