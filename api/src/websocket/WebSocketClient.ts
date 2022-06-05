@@ -42,7 +42,7 @@ export class WebSocketClient extends EventEmitter {
     });
   }
 
-  public async send(command: string, args: string[], type?: string, to?: string): Promise<void> {
+  public async send(command: string, args: string[], to?: string, type?: string): Promise<void> {
     return new Promise((resolve, reject) => {
       const message = this.WSParser.format(this.id, command, args, to, type);
       this.ws.send(this.WSParser.toString(message), (err) => {
@@ -70,6 +70,8 @@ export class WebSocketClient extends EventEmitter {
         } else if (parsedMessage.args[0] === 'unregister-success') {
           this.logger.debug('Client Unregistered!');
           this.emit('finish');
+        } else {
+          this.emit('message', parsedMessage);
         }
         break;
       default:
