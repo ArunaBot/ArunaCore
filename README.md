@@ -10,11 +10,13 @@
 
 3 - <a href="#Wiki">Wiki</a>
 
-4 - <a href="#Contributing">Contributing</a>
+4 - <a href="#API">API</a>
 
-5 - <a href="#Authors">Authors</a>
+5 - <a href="#Contributing">Contributing</a>
 
-6 - <a href="#License">License</a>
+6 - <a href="#Authors">Authors</a>
+
+7 - <a href="#License">License</a>
 
 ## TODO
 
@@ -39,6 +41,38 @@ TODO
 ## Wiki
 
 If you have any question, please check our <a href="https://github.com/ArunaBot/ArunaCore/wiki">Wiki</a> (**WIP**), contact us on <a href="https://github.com/ArunaBot/ArunaCore/issues">Github Issues Tab</a> or in the <a href="https://discord.gg/NqbBgEf">Discord</a>.
+
+## API
+
+Using the API is easy!
+
+### Installing:
+
+To install, just use `npm install arunacore-api`or `yarn add arunacore-api`.
+
+### Creating a client:
+
+```js
+import { ArunaClient } from 'arunacore-api';
+
+const client = new ArunaClient('localhost', 3000, '<clientName>');
+
+client.connect();
+```
+
+### Receiving a message:
+
+The message is received as a JSON object with parsed informations.
+
+```js
+client.on('message', (message) => {
+  console.log(message);
+});
+```
+
+### The full documentation:
+
+You can find the full documentation on <a href="https://github.com/ArunaBot/ArunaCore/wiki/api">Wiki</a>.
 
 ## Contributing
 

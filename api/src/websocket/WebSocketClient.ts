@@ -2,7 +2,7 @@ import { Logger, WebSocketParser, utils } from '../';
 import { EventEmitter } from 'events';
 import ws from 'ws';
 
-export class WebSocketClient extends EventEmitter {
+export class ArunaClient extends EventEmitter {
   public WSParser: WebSocketParser;
   private ws: ws.WebSocket;
   private logger: Logger;

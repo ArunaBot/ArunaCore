@@ -1,6 +1,6 @@
 {
   "name": "arunacore-api",
-  "version": "1.0.0-ALPHA.0",
+  "version": "1.0.0-ALPHA.2",
   "description": "TODO",
   "main": "build/src/index.js",
   "types": "src/index.ts",
@@ -8,7 +8,8 @@
     "start": "npm run build && node build/",
     "postinstall": "npm run build",
     "build": "npx tsc --build && npx ts-project-bundle --out=out",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "pdeploy": "node scripts/prepublish.js"
   },
   "repository": {
     "type": "git",
@@ -19,6 +20,7 @@
   "bugs": {
     "url": "https://github.com/ArunaBot/ArunaCore/issues"
   },
+  "keywords": ["management", "aruna", "websocket", "api"],
   "homepage": "https://github.com/ArunaBot/ArunaCore#readme",
   "devDependencies": {
     "@types/ws": "^8.5.0",

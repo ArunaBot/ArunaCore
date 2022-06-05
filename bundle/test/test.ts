@@ -1,4 +1,4 @@
-import { Logger, WebSocketClient } from 'arunacore-api';
+import { Logger, ArunaClient } from 'arunacore-api';
 import { Socket } from '@arunabot/core-websocket';
 import { ITestResponse } from './interfaces';
 import chalk from 'chalk';
@@ -32,7 +32,7 @@ const tests: any[] = [];
 async function runTests(): Promise<void> {
   var server: Socket|null = null;
 
-  var client: WebSocketClient|null = null; // = new WebSocketClient('localhost', 3000, 'client', loggerClient);
+  var client: ArunaClient|null = null; // = new WebSocketClient('localhost', 3000, 'client', loggerClient);
 
   for (var i = 0; i <= checks - 1; i++) {
     actualCheck = i + 1;

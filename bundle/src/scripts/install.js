@@ -11,10 +11,12 @@ for (const part of parts) {
   bundle.devDependencies = { ...bundle.devDependencies, ...devDependencies };
   bundle.dependencies = { ...bundle.dependencies, ...dependencies };
   execSync('npm install', { cwd: path.join(__dirname, '..', '..', '..', part), stdio: 'inherit' });
+  execSync('npm audit fix', { cwd: path.join(__dirname, '..', '..', '..', part), stdio: 'inherit' });
   console.log(`Installed ${part}`);
   // delete bundle.dependencies['arunacore-api'];
 }
 
 fs.writeFileSync(path.join(__dirname, '..', '..', 'package.json'), JSON.stringify(bundle, null, '\t'), { encoding: 'utf8' });
 
-execSync('npm install', { cwd: path.join(__dirname, '..', '..') });
+execSync('npm install', { cwd: path.join(__dirname, '..', '..'), stdio: 'inherit' });
+execSync('npm audit fix', { cwd: path.join(__dirname, '..', '..'), stdio: 'inherit' });

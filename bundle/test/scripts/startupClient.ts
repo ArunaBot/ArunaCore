@@ -1,9 +1,9 @@
 import { ITestResponse, ITestOptions } from '../interfaces';
-import { IMessage, WebSocketClient } from 'arunacore-api';
+import { IMessage, ArunaClient } from 'arunacore-api';
 
 function runStartupClient({ loggerClient, index }: ITestOptions): Promise<ITestResponse> {
   return new Promise((resolve, reject) => {
-    const client = new WebSocketClient('localhost', 3000, 'client', loggerClient);
+    const client = new ArunaClient('localhost', 3000, 'client', loggerClient);
 
     client.connect();
 

@@ -1,0 +1,7 @@
+.eslintignore
+.eslintrc
+.prettierc
+build/
+!out/build/
+src/
+tests/
