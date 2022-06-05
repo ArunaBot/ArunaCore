@@ -13,7 +13,7 @@ jobs:
       - id: set_var
         name: Get Version
         run: |
-          content=`cat ./package.json`
+          content=`cat ./bundle/package.json`
           # the following lines are only required for multi line json
           content="${content//'%'/'%25'}"
           content="${content//$'\n'/'%0A'}"
@@ -36,7 +36,7 @@ jobs:
       - id: set_var
         name: Get Version
         run: |
-          content=`cat ./package.json`
+          content=`cat ./bundle/package.json`
           # the following lines are only required for multi line json
           content="${content//'%'/'%25'}"
           content="${content//$'\n'/'%0A'}"

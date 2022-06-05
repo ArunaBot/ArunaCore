@@ -10,7 +10,7 @@ for (const part of parts) {
   console.log(`Installing ${part}`);
   bundle.devDependencies = { ...bundle.devDependencies, ...devDependencies };
   bundle.dependencies = { ...bundle.dependencies, ...dependencies };
-  execSync('npm install', { cwd: path.join(__dirname, '..', '..', '..', part) });
+  execSync('npm install', { cwd: path.join(__dirname, '..', '..', '..', part), stdio: 'inherit' });
   console.log(`Installed ${part}`);
   // delete bundle.dependencies['arunacore-api'];
 }
