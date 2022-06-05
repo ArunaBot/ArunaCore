@@ -48,6 +48,11 @@ export class Socket {
       return;
     }
 
+    if (conectionsFounded && data.args[0] === 'unregister') {
+      this.unregisterConnection(conectionsFounded);
+      return;
+    }
+
     if (!data.to) return;
 
     const toConnectionsFounded = this.connections.find((connection: IConnection) => connection.id === data.to);
@@ -108,6 +113,21 @@ export class Socket {
     }
   }
 
+  private unregisterConnection(connection: IConnection): void {
+    const index = this.connections.indexOf(connection);
+    if (index !== -1) {
+      this.connections.splice(index, 1);
+    }
+
+    connection.connection.send(this.parser.toString(this.parser.format('arunacore', '000', ['unregister-success', ', ', 'goodbye!'], connection.id)));
+
+    setTimeout(async () => {
+      if (await this.ping(connection)) {
+        connection.connection.close(1000);
+      }
+    }, 5000);
+  }
+
   private rawSend (connection: wss.WebSocket, data: any):void {
     connection.send(data);
   }
@@ -123,7 +143,7 @@ export class Socket {
     }
   }
 
-  public finishWebSocket():void {
+  public async finishWebSocket(): Promise<void> {
     this.logger.warn('Finishing Connections...');
     this.connections.forEach((connection: IConnection) => {
       this.close(connection.connection, 'ArunaCore is shutting down', 1012);
@@ -137,6 +157,7 @@ export class Socket {
     this.logger.warn('Stopping WebSocket Server...');
     this.ws.close();
     this.logger.info('WebSocket Stopped! Goodbye O/');
+    return Promise.resolve();
   }
 
   /**

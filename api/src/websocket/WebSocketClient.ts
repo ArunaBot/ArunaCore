@@ -1,4 +1,4 @@
-import { Logger, WebSocketParser } from '../';
+import { Logger, WebSocketParser, utils } from '../';
 import { EventEmitter } from 'events';
 import ws from 'ws';
 
@@ -64,8 +64,13 @@ export class WebSocketClient extends EventEmitter {
 
     switch (parsedMessage.command) {
       case '000':
-        this.logger.debug('Client Registered!');
-        this.emit('ready');
+        if (parsedMessage.args[0] === 'register-success') {
+          this.logger.debug('Client Registered!');
+          this.emit('ready');
+        } else if (parsedMessage.args[0] === 'unregister-success') {
+          this.logger.debug('Client Unregistered!');
+          this.emit('finish');
+        }
         break;
       default:
         this.emit('message', parsedMessage);
@@ -87,6 +92,16 @@ export class WebSocketClient extends EventEmitter {
           resolve(true);
         }
       });
+    });
+  }
+
+  public async finish(): Promise<void> {
+    return new Promise(async (resolve) => {
+      await this.send('000', ['unregister']);
+
+      await utils.sleep(3000);
+      this.ws.close(1000);
+      return resolve();
     });
   }
 }
