@@ -40,14 +40,14 @@ export class WebSocketParser {
 
       args[0] = args[0].substring(1);
 
-      return { from: from, type: type, command: command, to: to, args: args };
+      return { from, type, command, to, args };
     }
 
     return null;
   }
 
   public format(from: string, command: string, args: string[], to?: string, type?: string): IMessage {
-    return { from: from, type: type, command: command, to: to, args: args };
+    return { from, type, command, to, args };
   }
 
   public toString(message: IMessage): string {

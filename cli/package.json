@@ -1,40 +1,40 @@
 {
-  "name": "@arunabot/core-cli",
-  "version": "1.0.0-ALPHA.0",
-  "description": "TODO",
-  "main": "build/index.js",
-  "types": "src/index.ts",
-  "scripts": {
-    "start": "npm run build && node build/",
-    "postinstall": "npm run build",
-    "build": "npx tsc -p .",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ArunaBot/ArunaCore.git"
-  },
-  "author": "ArunaTeam",
-  "license": "GPL-3.0",
-  "bugs": {
-    "url": "https://github.com/ArunaBot/ArunaCore/issues"
-  },
-  "homepage": "https://github.com/ArunaBot/ArunaCore#readme",
-  "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.2.0",
-    "@typescript-eslint/parser": "^5.2.0",
-    "eslint": "^7.32.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-config-standard": "^16.0.3",
-    "eslint-plugin-import": "^2.25.2",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^4.0.0",
-    "eslint-plugin-promise": "^5.1.1",
-    "eslint-plugin-react": "^7.26.1",
-    "prettier": "^2.4.1",
-    "typescript": "^4.4.4"
-  },
-  "dependencies": {
-    "arunacore-api": "file:../api"
-  }
+	"name": "@arunabot/core-cli",
+	"version": "1.0.0-ALPHA.1",
+	"description": "TODO",
+	"main": "build/index.js",
+	"types": "src/index.ts",
+	"scripts": {
+		"start": "npm run build && node build/",
+		"postinstall": "npm run build",
+		"build": "npx tsc -p .",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ArunaBot/ArunaCore.git"
+	},
+	"author": "ArunaTeam",
+	"license": "GPL-3.0",
+	"bugs": {
+		"url": "https://github.com/ArunaBot/ArunaCore/issues"
+	},
+	"homepage": "https://github.com/ArunaBot/ArunaCore#readme",
+	"devDependencies": {
+		"@typescript-eslint/eslint-plugin": "^5.30.5",
+		"@typescript-eslint/parser": "^5.30.5",
+		"eslint": "^8.19.0",
+		"eslint-config-prettier": "^8.5.0",
+		"eslint-config-standard": "^17.0.0",
+		"eslint-plugin-import": "^2.26.0",
+		"eslint-plugin-node": "^11.1.0",
+		"eslint-plugin-prettier": "^4.2.1",
+		"eslint-plugin-promise": "^6.0.0",
+		"eslint-plugin-react": "^7.30.1",
+		"prettier": "^2.7.1",
+		"typescript": "^4.7.4"
+	},
+	"dependencies": {
+		"arunacore-api": "file:../api"
+	}
 }

@@ -12,7 +12,7 @@ export class Socket {
   private connections: IConnection[] = [];
 
   constructor(port: number, logger: Logger) {
-    this.ws = new wss.Server({ port: port }); // Creates a new websocket server
+    this.ws = new wss.Server({ port }); // Creates a new websocket server
     this.ws.on('connection', (ws) => { this.onConnection(ws); }); // When a connection is made, call the onConnection function
     this.logger = logger;
     this.pingLoop();

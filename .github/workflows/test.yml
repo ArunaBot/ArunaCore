@@ -1,9 +1,9 @@
-name: ESLint
+name: Test
 on: [push, pull_request]
 
 jobs:
-  update:
-    name: ESLint
+  test:
+    name: Test
 
     runs-on: ubuntu-latest
 
@@ -16,13 +16,10 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - name: Run CI-Setup
+      - name: Run Test
         working-directory: ./bundle
-        run: npm run cisetup
-      - name: Run ESLint
-        working-directory: ./bundle
-        run: npm run eslint:fix
-      - name: Commit changes
+        run: npm run test
+      - name: Commit changes (if exists)
         uses: EndBug/add-and-commit@v4
         with:
           add: .

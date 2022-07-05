@@ -1,4 +1,5 @@
-name: Publish Tag
+name: Publish Tag and Release
+
 on:
   push:
     branches:

@@ -5,6 +5,8 @@ const packageJson = JSON.parse(packageRaw);
 
 packageJson.types = 'build/src/index.ts';
 
+delete packageJson.scripts;
+
 fs.writeFileSync('./out/package.json', JSON.stringify(packageJson, null, 2));
 
 fs.copyFileSync('./.npmignore', './out/.npmignore');
