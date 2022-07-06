@@ -1,9 +1,9 @@
-import { Logger, WebSocketParser, utils } from '../';
+import { Logger, WebSocketParser, utils, IMessage } from '../';
 import { EventEmitter } from 'events';
 import ws from 'ws';
 
 export class ArunaClient extends EventEmitter {
-  public WSParser: WebSocketParser;
+  private WSParser: WebSocketParser;
   private ws: ws.WebSocket;
   private logger: Logger;
   private host: string;
@@ -80,7 +80,7 @@ export class ArunaClient extends EventEmitter {
     }
   }
 
-  public register(): void {
+  private register(): void {
     this.send('000', ['register', process.env.npm_package_version ?? '', process.env.npm_package_version ?? '']);
   }
 
@@ -97,6 +97,14 @@ export class ArunaClient extends EventEmitter {
     });
   }
 
+  public getWSParser(): WebSocketParser {
+    return this.WSParser;
+  }
+
+  public getID(): string {
+    return this.id;
+  }
+
   public async finish(): Promise<void> {
     return new Promise(async (resolve) => {
       await this.send('000', ['unregister']);
@@ -106,4 +114,17 @@ export class ArunaClient extends EventEmitter {
       return resolve();
     });
   }
+}
+
+export interface ArunaClient {
+  getWSParser(): WebSocketParser;
+  getID(): string;
+  ping(): Promise<boolean>;
+  finish(): Promise<void>;
+  on(event: 'ready', listener: () => void): this;
+  on(event: 'finish', listener: () => void): this;
+  on(event: 'error', listener: (err: Error) => void): this;
+  on(event: 'message', listener: (message: IMessage) => void): this;
+  on(event: 'close', listener: (code: number, reason: string) => void): this;
+  on(event: string, listener: (...args: any[]) => void): this;
 }

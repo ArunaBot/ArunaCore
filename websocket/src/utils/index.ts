@@ -1,1 +1,1 @@
-export default null;
+export * as autoLogEnd from './autoLogEnd';

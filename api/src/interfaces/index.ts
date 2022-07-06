@@ -1,2 +1,2 @@
-export * from './LoggerOption';
-export * from './imessage';
+export * from './ILoggerOption';
+export * from './IMessage';

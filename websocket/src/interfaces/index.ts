@@ -1,1 +1,2 @@
-export * from './iconnection';
+export * from './ISocketOptions';
+export * from './IConnection';

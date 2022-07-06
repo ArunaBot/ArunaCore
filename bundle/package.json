@@ -4,7 +4,8 @@
 	"description": "TODO",
 	"main": "build/bundle/src/start.js",
 	"scripts": {
-		"start": "npm run setup && node build/bundle/src/start.js",
+		"prestart": "npm run setup",
+		"start": "node build/bundle/src/start.js",
 		"setup": "node src/scripts/install.js",
 		"postsetup": "npm run build",
 		"cisetup": "node src/scripts/ciInstall.js && npm run build",

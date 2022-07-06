@@ -8,7 +8,7 @@ function runStartupClient({ loggerClient, index }: ITestOptions): Promise<ITestR
     client.connect();
 
     client.on('message', (message: IMessage) => {
-      loggerClient.info(client.WSParser.toString(message));
+      loggerClient.info(client.getWSParser().toString(message));
     });
 
     client.on('ready', () => {

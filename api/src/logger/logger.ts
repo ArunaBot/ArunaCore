@@ -1,78 +1,128 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { LoggerOption, LoggerLevel } from '../interfaces';
+import { ILoggerOptions, ELoggerLevel } from '../interfaces';
 import chalk from 'chalk';
 
-function getTimeRaw(): string {
-  return `${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}`;
-}
-
-function getTime(): string {
-  const time: string = getTimeRaw();
-  const separatedTime: string[] = time.split(':');
-  separatedTime.forEach((element, index) => {
-    if (element.length < 2) {
-      separatedTime[index] = `0${separatedTime[index]}`;
-    }
-  });
-  return separatedTime.join(':');
-}
-
 export class Logger {
+  private defaultLevel: ELoggerLevel = ELoggerLevel.LOG;
   private debugActive = false;
-  private prefix = '';
+  private prefix?: string;
 
-  constructor(options: LoggerOption) {
-    this.debugActive = options.debug ? options.debug : false;
-    this.prefix = options.prefix ? options.prefix : '';
+  constructor({ prefix, debug, defaultLevel }: ILoggerOptions) {
+    this.prefix = prefix ?? '';
+    this.debugActive = debug ?? false;
+    this.defaultLevel = defaultLevel ?? ELoggerLevel.INFO;
   }
 
-  private getPrefix(): string {
-    return this.prefix === '' ? '' : `${chalk.gray(`[${this.prefix}]`)}`;
+  private getFormattedPrefix(): string {
+    var prefix = '';
+    prefix += chalk.hex('#5c5c5c')('[');
+    prefix += chalk.gray(this.prefix);
+    prefix += chalk.hex('#5c5c5c')(']');
+
+    return this.prefix !== '' ? prefix : '';
   }
 
-  fatal(message: string|Error, args?: string[]|Error|Error[]): void {
-    // eslint-disable-next-line max-len
-    console.trace(chalk.bgWhite(this.getPrefix() + chalk.red(`[${getTime()}] Fatal${message.toString().split(' ')[0].toLowerCase().includes('error') ? '' : ':'} ${message}`)));
+  private getTime(): string {
+    const time = new Date(Date.now());
+    const seconds = time.getSeconds() < 10 ? '0' + time.getSeconds() : time.getSeconds();
+    const minutes = time.getMinutes() < 10 ? '0' + time.getMinutes() : time.getMinutes();
+    const hours = time.getHours() < 10 ? '0' + time.getHours() : time.getHours();
+    return `[${hours}:${minutes}:${seconds}]`;
+  }
+
+  info(text: string | number | Error, ...args: any): void {
+    var textConstructor = '';
+    textConstructor += chalk.blueBright(this.getTime());
+    textConstructor += this.getFormattedPrefix();
+    textConstructor += ' Info: ';
+    textConstructor += text;
+
+    if ((!args && !(args instanceof Boolean)) || ((args instanceof Array) && args.length === 0)) {
+      console.log(textConstructor);
+    } else {
+      console.log(textConstructor, args);
+    }
+  }
+
+  warn(text: string | number | Error, ...args: any): void {
+    var textConstructor = '';
+    textConstructor += chalk.hex('#ff8a1c')(this.getTime());
+    textConstructor += this.getFormattedPrefix();
+    textConstructor += ` ${text.toString().toLowerCase().split(' ')[0].includes('warn') ? '' : 'Warn:'} `;
+    textConstructor += text;
+
+    if ((!args && !(args instanceof Boolean)) || ((args instanceof Array) && args.length === 0)) {
+      console.warn(textConstructor);
+    } else {
+      console.warn(textConstructor, args);
+    }
+  }
+
+  error(text: string | number | Error, ...args: any): void {
+    var textConstructor = '';
+    textConstructor += chalk.red(this.getTime());
+    textConstructor += this.getFormattedPrefix();
+    textConstructor += ` ${text.toString().toLowerCase().split(' ')[0].includes('error') ? '' : 'Error:'} `;
+    textConstructor += text;
+
+    if ((!args && !(args instanceof Boolean)) || ((args instanceof Array) && args.length === 0)) {
+      console.error(textConstructor);
+    } else {
+      console.error(textConstructor, args);
+    }
+  }
+
+  fatal(text: string | number | Error, ...args: any): void {
+    var textConstructor = '';
+    textConstructor += chalk.hex('#ff8a1c')(this.getTime());
+    textConstructor += this.getFormattedPrefix();
+    textConstructor += ` Fatal ${text.toString().toLowerCase().split(' ')[0].includes('error') ? '' : ':'} `;
+    textConstructor += text;
+
+    textConstructor = chalk.bgWhite(textConstructor);
+
+    if ((!args && !(args instanceof Boolean)) || ((args instanceof Array) && args.length === 0)) {
+      console.trace(textConstructor);
+    } else {
+      console.trace(textConstructor, args);
+    }
+
     process.exit(5);
   }
 
-  error(message: string|Error, args?: string[]|Error|Error[]): void {
-    // eslint-disable-next-line max-len
-    console.error(this.getPrefix() + chalk.red(`[${getTime()}] ${message.toString().split(' ')[0].toLowerCase().includes('error') ? '' : 'Error:'} ${message}`));
-  }
+  debug(text: string | number | Error, ...args: any): void {
+    if (!this.debugActive) return;
+    var textConstructor = '';
+    textConstructor += chalk.hex('#ff8a1c')(this.getTime());
+    textConstructor += this.getFormattedPrefix();
+    textConstructor += ` ${text.toString().toLowerCase().split(' ')[0].includes('debug') ? '' : 'Debug:'} `;
+    textConstructor += text;
 
-  warn(message: string|Error, args?: string[]|Error|Error[]): void {
-    console.warn(this.getPrefix() + chalk.keyword('orange')(`[${getTime()}] Warn: ${message}`));
-  }
-
-  info(message: string|Error, args?: string[]|Error|Error[]): void {
-    console.info(this.getPrefix() + chalk.blueBright(`[${getTime()}] `) + `Info: ${message}`);
-  }
-
-  debug(message: string|Error, args?: string[]|Error|Error[]): void {
-    if (this.debugActive) {
-      console.debug(this.getPrefix() + chalk.gray(`[${getTime()}] Debug: `) + chalk.hex('#AAA')(message));
+    if (((!args && !(args instanceof Boolean)) || ((args instanceof Array) && args.length === 0)) || ((args instanceof Array) && args.length === 0)) {
+      console.debug(textConstructor);
+    } else {
+      console.debug(textConstructor, args);
     }
   }
 
-  log(message: string|Error, level?: LoggerLevel, args?: string[]|Error|Error[]): void {
+  log(message: string | number | Error, level?: ELoggerLevel, ...args: any): void {
+    level = level ?? this.defaultLevel;
     switch (level) {
-      case LoggerLevel.DEBUG:
+      case ELoggerLevel.DEBUG:
         this.debug(message, args);
         break;
-      case LoggerLevel.WARN:
-      case LoggerLevel.ALERT:
+      case ELoggerLevel.WARN:
+      case ELoggerLevel.ALERT:
         this.warn(message, args);
         break;
-      case LoggerLevel.ERROR:
-      case LoggerLevel.SEVERE:
+      case ELoggerLevel.ERROR:
+      case ELoggerLevel.SEVERE:
         this.error(message, args);
         break;
-      case LoggerLevel.FATAL:
+      case ELoggerLevel.FATAL:
         this.fatal(message, args);
         break;
-      case LoggerLevel.INFO:
-      case LoggerLevel.LOG:
+      case ELoggerLevel.INFO:
+      case ELoggerLevel.LOG:
       default:
         this.info(message, args);
         break;
