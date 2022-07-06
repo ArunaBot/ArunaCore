@@ -10,7 +10,11 @@ jobs:
     name: Publish Tag
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: "Refresh tags"
+        id: tag
+        run: git fetch --tags --force
       - id: set_var
         name: Get Version
         run: |
@@ -33,7 +37,11 @@ jobs:
     name: Publish Release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: "Refresh tags"
+        id: tag
+        run: git fetch --tags --force
       - id: set_var
         name: Get Version
         run: |
