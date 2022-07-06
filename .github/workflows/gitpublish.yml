@@ -1,19 +1,21 @@
 name: Publish Tag and Release
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: [Test]
+    types: [completed]
+    branches: [main]
 
 jobs:
   job1:
     name: Publish Tag
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: "Refresh tags"
-        id: tag
+        id: refresh-tag
         run: git fetch --tags --force
       - id: set_var
         name: Get Version
@@ -36,6 +38,7 @@ jobs:
     needs: job1
     name: Publish Release
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3

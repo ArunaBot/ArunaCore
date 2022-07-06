@@ -1,17 +1,20 @@
-name: Publish API to npmjs
+name: Publish API to NPM and GPR
 
 on:
-  release:
-    types: [created]
+  workflow_run:
+    workflows: [Test]
+    types: [completed]
+    branches: [main]
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
       # Setup .npmrc file to publish to npm
-      - name: Setup .npmrc
+      - name: Setup .npmrc (NPM)
         uses: actions/setup-node@v3
         with:
           node-version: '12.x'
@@ -22,8 +25,6 @@ jobs:
       - name: Install dependencies
         working-directory: ./api
         run: npm ci
-      - name: Copy .npmrc to api/out
-        run: cp .npmrc ./api/out
       - name: Prepare to publish
         working-directory: ./api
         run: npm run pdeploy
@@ -32,3 +33,12 @@ jobs:
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Setup .npmrc (GPR)
+        uses: actions/setup-node@v3
+        with:
+          registry-url: 'https://npm.pkg.github.com'
+      - name: Publish to GPR
+        working-directory: ./api/out
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
