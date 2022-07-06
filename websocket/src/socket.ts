@@ -1,21 +1,32 @@
-import { IConnection } from './interfaces';
 import { IMessage, Logger, WebSocketParser } from 'arunacore-api';
+import { IConnection, ISocketOptions } from './interfaces';
+import { autoLogEnd } from './utils';
+import { EventEmitter } from 'events';
 import semver from 'semver';
 import * as wss from 'ws';
 
-export class Socket {
+export class Socket extends EventEmitter {
   private ws: wss.Server;
   private logger: Logger;
+  private isAutoLogEndEnable: boolean;
   private timeouts: any[] = [];
   private pingLoopTimeout: any;
   private parser = new WebSocketParser({});
   private connections: IConnection[] = [];
 
-  constructor(port: number, logger: Logger) {
-    this.ws = new wss.Server({ port: port }); // Creates a new websocket server
+  constructor(port: number, logger: Logger, options?: ISocketOptions) {
+    super();
+    this.ws = new wss.Server({ port }); // Creates a new websocket server
     this.ws.on('connection', (ws) => { this.onConnection(ws); }); // When a connection is made, call the onConnection function
     this.logger = logger;
     this.pingLoop();
+
+    if (options && options.autoLogEnd) {
+      autoLogEnd.activate(this);
+      this.isAutoLogEndEnable = true;
+    } else {
+      this.isAutoLogEndEnable = false;
+    }
   }
 
   private onConnection(ws: wss.WebSocket):void {
@@ -68,7 +79,7 @@ export class Socket {
       return;
     }
 
-    console.log(data);
+    this.emit('message', data);
   }
 
   /**
@@ -157,6 +168,7 @@ export class Socket {
     this.logger.warn('Stopping WebSocket Server...');
     this.ws.close();
     this.logger.info('WebSocket Stopped! Goodbye O/');
+    if (this.isAutoLogEndEnable) autoLogEnd.deactivate();
     return Promise.resolve();
   }
 
@@ -176,6 +188,10 @@ export class Socket {
       }, 5000);
       connection.connection.ping();
     });
+  }
+
+  public getWSParser(): WebSocketParser {
+    return this.parser;
   }
 
   /**
@@ -204,4 +220,11 @@ export class Socket {
   private close(connection: wss.WebSocket, reason?: string, code = 1000):void {
     connection.close(code, reason);
   }
+}
+
+export interface Socket {
+  getWSParser(): WebSocketParser;
+  finishWebSocket(): Promise<void>;
+  send(connection: wss.WebSocket, ...data: any): void;
+  on(event: 'message', listener: (message: IMessage) => void): this;
 }

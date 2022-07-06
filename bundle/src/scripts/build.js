@@ -59,19 +59,26 @@ dirs.forEach((a) => {
 if (!argv.includes('copyonly')) {
   console.log(`[${++i}/${steps}] Compiling src files ...`);
 
-  console.log(
-    execSync(
-      'node "' +
+  for (const i in dirs) {
+    var current = dirs[i];
+    if (current === 'bundle') continue;
+    if (verbose) console.log(`Compiling ${current} (${path.join(__dirname, '..', '..', '..', current)})...`);
+    execSync('npm run build', { cwd: path.join(__dirname, '..', '..', '..', current), stdio: 'inherit', shell: true, env: process.env });
+    if (verbose) console.log(`Compiled ${current} (${path.join(__dirname, '..', '..', '..', current)})!`);
+  }
+
+  execSync(
+    'node "' +
       path.join(__dirname, '..', '..', 'node_modules', 'typescript', 'lib', 'tsc.js') +
       '" -p "' +
       path.join(__dirname, '..', '..') +
       '"',
-      {
-        cwd: path.join(__dirname, '..', '..'),
-        shell: true,
-        env: process.env,
-        encoding: 'utf8',
-      },
-    ),
+    {
+      cwd: path.join(__dirname, '..', '..'),
+      shell: true,
+      env: process.env,
+      encoding: 'utf8',
+      stdio: 'inherit',
+    },
   );
 }

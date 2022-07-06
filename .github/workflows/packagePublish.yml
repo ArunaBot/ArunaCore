@@ -1,0 +1,34 @@
+name: Publish API to npmjs
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      # Setup .npmrc file to publish to npm
+      - name: Setup .npmrc
+        uses: actions/setup-node@v3
+        with:
+          node-version: '12.x'
+          registry-url: 'https://registry.npmjs.org'
+          scope: '@arunabot'
+      - name: Update NPM
+        run: npm install -g npm@latest
+      - name: Install dependencies
+        working-directory: ./api
+        run: npm ci
+      - name: Copy .npmrc to api/out
+        run: cp .npmrc ./api/out
+      - name: Prepare to publish
+        working-directory: ./api
+        run: npm run pdeploy
+      - name: Publish to npm
+        working-directory: ./api/out
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

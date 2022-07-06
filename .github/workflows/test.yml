@@ -1,9 +1,9 @@
-name: ESLint
+name: Test
 on: [push, pull_request]
 
 jobs:
-  update:
-    name: ESLint
+  test:
+    name: Test
 
     runs-on: ubuntu-latest
 
@@ -18,16 +18,6 @@ jobs:
           node-version: 12.x
       - name: Update NPM
         run: npm install -g npm@latest
-      - name: Run CI-Setup
+      - name: Run Test
         working-directory: ./bundle
-        run: npm run cisetup
-      - name: Run ESLint
-        working-directory: ./bundle
-        run: npm run eslint:fix
-      - name: Commit changes
-        uses: EndBug/add-and-commit@v4
-        with:
-          add: .
-          message: "(lint): Auto-fix linting errors"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run test
