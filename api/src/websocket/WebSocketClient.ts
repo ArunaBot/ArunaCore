@@ -1,4 +1,5 @@
-import { Logger, WebSocketParser, utils, IMessage } from '../';
+import { Logger, WebSocketParser, utils } from '../';
+import { IMessage } from '../interfaces';
 import { EventEmitter } from 'events';
 import ws from 'ws';
 
