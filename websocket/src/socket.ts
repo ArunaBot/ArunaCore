@@ -1,7 +1,8 @@
 import { IMessage, Logger, WebSocketParser } from 'arunacore-api';
 import { IConnection, ISocketOptions } from './interfaces';
-import { autoLogEnd } from './utils';
+import { HTTPServer } from '@arunabot/core-http';
 import { EventEmitter } from 'events';
+import { autoLogEnd } from './utils';
 import semver from 'semver';
 import * as wss from 'ws';
 
@@ -13,10 +14,19 @@ export class Socket extends EventEmitter {
   private pingLoopTimeout: any;
   private parser = new WebSocketParser({});
   private connections: IConnection[] = [];
+  private httpServer: HTTPServer;
 
   constructor(port: number, logger: Logger, options?: ISocketOptions) {
     super();
-    this.ws = new wss.Server({ port }); // Creates a new websocket server
+    this.httpServer = new HTTPServer();
+    this.httpServer.registerRoute('/healthCheck', 'get', (req: any, res: any) => {
+      res.write('OK');
+      res.statusCode = 200;
+      return res.end();
+    });
+    this.httpServer.enableUpgradeRequired();
+    this.httpServer.listen(port);
+    this.ws = new wss.Server({ server: this.httpServer.getServer() }); // Creates a new websocket server
     this.ws.on('connection', (ws) => { this.onConnection(ws); }); // When a connection is made, call the onConnection function
     this.logger = logger;
     this.pingLoop();
@@ -167,6 +177,8 @@ export class Socket extends EventEmitter {
     });
     this.logger.warn('Stopping WebSocket Server...');
     this.ws.close();
+    this.logger.warn('Stopping HTTP Server...');
+    this.httpServer.close();
     this.logger.info('WebSocket Stopped! Goodbye O/');
     if (this.isAutoLogEndEnable) autoLogEnd.deactivate();
     return Promise.resolve();
