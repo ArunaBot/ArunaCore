@@ -33,3 +33,14 @@ jobs:
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  publish-docker:
+    needs: [publish]
+    if: needs.publish.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Update Docker Image
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.BOT_SECRET }}
+          event-type: publish-docker-image
+          repository: ArunaBot/ArunaCore-Docker
