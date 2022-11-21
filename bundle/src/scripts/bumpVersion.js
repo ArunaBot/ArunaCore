@@ -7,7 +7,7 @@ console.log(argv);
 var steps = 0;
 var current = 0;
 
-const dirs = ['api', 'cli', 'core', 'http', 'websocket', 'bundle'];
+const dirs = ['api', 'http', 'websocket', 'bundle'];
 
 var apiVersion = null;
 

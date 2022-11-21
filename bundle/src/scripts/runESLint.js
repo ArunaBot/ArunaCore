@@ -1,7 +1,7 @@
 const { execSync } = require('child_process');
 const path = require('path');
 
-const parts = ['api', 'bundle', 'cli', 'core', 'http', 'websocket'];
+const parts = ['api', 'bundle', 'http', 'websocket'];
 
 for (const part of parts) {
   console.log(`Running ESLint on ${part}...`);

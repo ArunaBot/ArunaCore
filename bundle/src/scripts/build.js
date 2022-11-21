@@ -7,7 +7,7 @@ const { argv } = require('process');
 var steps = 2; var i = 0;
 if (argv.includes('clean')) steps++;
 if (argv.includes('copyonly')) steps--;
-const dirs = ['api', 'cli', 'core', 'http', 'websocket', 'bundle'];
+const dirs = ['api', 'http', 'websocket', 'bundle'];
 
 const verbose = argv.includes('verbose') || argv.includes('v');
 
