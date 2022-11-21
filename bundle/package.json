@@ -13,6 +13,7 @@
 		"build": "node src/scripts/build.js",
 		"bumpVersion": "node src/scripts/bumpVersion.js",
 		"postbumpVersion": "npm run setup --ignore-scripts",
+		"docker:cleanup": "node src/scripts/dockerCleanup.js",
 		"pretest": "npm run setup && npm run eslint:fix",
 		"test": "npm run build -- v clean test && node build/bundle/test/test.js"
 	},
