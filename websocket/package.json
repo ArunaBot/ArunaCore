@@ -1,6 +1,6 @@
 {
 	"name": "@arunabot/core-websocket",
-	"version": "1.0.0-ALPHA.1",
+	"version": "1.0.0-ALPHA.2",
 	"description": "TODO",
 	"main": "build/index.js",
 	"types": "src/index.ts",
