@@ -28,9 +28,9 @@
 	},
 	"homepage": "https://github.com/ArunaBot/ArunaCore#readme",
 	"dependencies": {
-		"arunacore-api": "file:../api",
 		"@arunabot/core-http": "file:../http",
-		"@arunabot/core-websocket": "file:../websocket"
+		"@arunabot/core-websocket": "file:../websocket",
+		"arunacore-api": "file:../api"
 	},
 	"devDependencies": {
 		"@types/ws": "^8.5.3",
