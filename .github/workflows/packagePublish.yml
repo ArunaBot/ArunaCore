@@ -22,8 +22,8 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           scope: '@arunabot'
 
-      - name: Update NPM
-        run: npm install -g npm@latest
+      - name: Enforce npm 8
+        run: npm install -g npm@8.x
 
       - name: Get Current version
         id: current_version
