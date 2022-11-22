@@ -32,7 +32,7 @@ jobs:
 
       - name: Get current npm version
         id: npm_version
-        run: echo ::set-output name=version::$(npm view @myorg/mylib version)
+        run: echo ::set-output name=version::$(npm view arunacore-api version)
       
       - name: Compare versions and skip if same
         id: compare_versions

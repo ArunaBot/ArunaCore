@@ -6,7 +6,6 @@
 	"types": "src/index.ts",
 	"scripts": {
 		"start": "npm run build && node build/",
-		"postinstall": "npm run build",
 		"build": "npx tsc -p .",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},

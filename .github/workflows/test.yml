@@ -12,12 +12,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
       - name: Install Node v12
         uses: actions/setup-node@v3
         with:
           node-version: 12.x
+
       - name: Update NPM
         run: npm install -g npm@8.x
+
       - name: Run Test
         working-directory: ./bundle
         run: npm run test
