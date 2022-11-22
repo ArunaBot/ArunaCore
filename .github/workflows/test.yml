@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: 12.x
       - name: Update NPM
-        run: npm install -g npm@latest
+        run: npm install -g npm@8.x
       - name: Run Test
         working-directory: ./bundle
         run: npm run test
