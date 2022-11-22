@@ -34,6 +34,7 @@ export function activate(socket: Socket, uncaughtException?: boolean): void {
   process.on('SIGINT', exitHandler.bind(null, {}));
   process.on('SIGUSR1', exitHandler.bind(null, {}));
   process.on('SIGUSR2', exitHandler.bind(null, {}));
+  process.on('SIGTERM', exitHandler.bind(null, {}));
   process.on('uncaughtException', exitHandler.bind(null, { uncaughtException: uncaughtException ?? false }));
 }
 
@@ -42,5 +43,6 @@ export function deactivate(): void {
   process.removeListener('SIGINT', exitHandler);
   process.removeListener('SIGUSR1', exitHandler);
   process.removeListener('SIGUSR2', exitHandler);
+  process.removeListener('SIGTERM', exitHandler);
   process.removeListener('uncaughtException', exitHandler);
 }
