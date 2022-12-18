@@ -3,7 +3,7 @@
 const path = require('path');
 const fs = require('fs');
 
-const parts = ['api', 'cli', 'core', 'http', 'websocket'];
+const parts = ['api', 'http', 'websocket'];
 
 const folders = [{
   path: 'src',

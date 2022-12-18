@@ -40,7 +40,20 @@ export class WebSocketParser {
 
       args[0] = args[0].substring(1);
 
-      return { from, type, command, to, args };
+      var secureKey: string|undefined;
+      var targetKey: string|undefined;
+      if (args[0]?.startsWith('key:')) {
+        secureKey = args[0].split(':')[1];
+        args.shift();
+        if (args[0]?.startsWith('targetKey:')) {
+          targetKey = args[0].split(':')[1];
+          args.shift();
+        } else {
+          targetKey = secureKey;
+        }
+      }
+
+      return { from, type, command, to, secureKey, targetKey, args };
     }
 
     return null;

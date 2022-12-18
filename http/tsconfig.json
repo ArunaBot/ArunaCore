@@ -7,7 +7,7 @@
     "module": "commonjs",
     "removeComments": true,
     "outDir": "build",
-    "types": ["chalk"]
+    "types": ["chalk", "node"]
   },
   "exclude": ["node_modules", "build", "tsconfig.json"]
 }

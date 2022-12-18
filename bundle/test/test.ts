@@ -33,19 +33,23 @@ async function runTests(): Promise<void> {
   var server: Socket|null = null;
 
   var client: ArunaClient|null = null; // = new WebSocketClient('localhost', 3000, 'client', loggerClient);
+  var client2: ArunaClient|null = null; // = new WebSocketClient('localhost', 3000, 'client2', loggerClient);
+  var client3: ArunaClient|null = null; // = new WebSocketClient('localhost', 3000, 'client3', loggerClient);
 
   for (var i = 0; i <= checks - 1; i++) {
     actualCheck = i + 1;
     logger.info(`Starting test: "${chalk.blueBright(tests[i].name)}" [${actualCheck}/${checks}]`);
 
     // eslint-disable-next-line no-await-in-loop
-    await tests[i].run({ loggerClient, loggerServer, client, server, index: i }).catch((e: any) => {
+    await tests[i].run({ loggerClient, loggerServer, client, client2, client3, server, index: i }).catch((e: any) => {
       logger.warn(`Error on test: "${chalk.yellow(tests[i].name)}". Error: ${e}`);
       testFailed = true;
     }).then((result?: ITestResponse) => {
       if (result) {
         if (result.server) server = result.server;
         if (result.client) client = result.client;
+        if (result.client2) client2 = result.client2;
+        if (result.client3) client3 = result.client3;
       }
     });
   }

@@ -16,8 +16,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 12.x
-      - name: Update NPM
-        run: npm install -g npm@latest
+      - name: Enforce npm 8
+        run: npm install -g npm@8.x
       - name: Run CI-Setup
         working-directory: ./bundle
         run: npm run cisetup

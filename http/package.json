@@ -1,12 +1,11 @@
 {
 	"name": "@arunabot/core-http",
-	"version": "1.0.0-ALPHA.1",
+	"version": "1.0.0-ALPHA.2",
 	"description": "TODO",
 	"main": "build/index.js",
 	"types": "src/index.ts",
 	"scripts": {
 		"start": "npm run build && node build/",
-		"postinstall": "npm run build",
 		"build": "npx tsc -p .",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
@@ -21,6 +20,7 @@
 	},
 	"homepage": "https://github.com/ArunaBot/ArunaCore#readme",
 	"devDependencies": {
+		"@types/node": "^18.0.1",
 		"@typescript-eslint/eslint-plugin": "^5.30.5",
 		"@typescript-eslint/parser": "^5.30.5",
 		"eslint": "^8.19.0",

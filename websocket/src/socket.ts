@@ -1,22 +1,32 @@
 import { IMessage, Logger, WebSocketParser } from 'arunacore-api';
 import { IConnection, ISocketOptions } from './interfaces';
-import { autoLogEnd } from './utils';
+import { HTTPServer } from '@arunabot/core-http';
 import { EventEmitter } from 'events';
-import semver from 'semver';
+import { autoLogEnd } from './utils';
 import * as wss from 'ws';
 
 export class Socket extends EventEmitter {
   private ws: wss.Server;
   private logger: Logger;
   private isAutoLogEndEnable: boolean;
+  private requireAuth: boolean;
   private timeouts: any[] = [];
   private pingLoopTimeout: any;
   private parser = new WebSocketParser({});
   private connections: IConnection[] = [];
+  private httpServer: HTTPServer;
 
   constructor(port: number, logger: Logger, options?: ISocketOptions) {
     super();
-    this.ws = new wss.Server({ port }); // Creates a new websocket server
+    this.httpServer = new HTTPServer();
+    this.httpServer.registerRoute('/healthCheck', 'get', (req: any, res: any) => {
+      res.write('OK');
+      res.statusCode = 200;
+      return res.end();
+    });
+    this.httpServer.enableUpgradeRequired();
+    this.httpServer.listen(port);
+    this.ws = new wss.Server({ server: this.httpServer.getServer() }); // Creates a new websocket server
     this.ws.on('connection', (ws) => { this.onConnection(ws); }); // When a connection is made, call the onConnection function
     this.logger = logger;
     this.pingLoop();
@@ -27,16 +37,19 @@ export class Socket extends EventEmitter {
     } else {
       this.isAutoLogEndEnable = false;
     }
+
+    this.requireAuth = options?.requireAuth ?? false;
   }
 
   private onConnection(ws: wss.WebSocket):void {
-    ws.on('message', (message) => this.onMessage({ data: message, target: ws, type: '' }));
+    ws.on('message', (message) => this.onMessage({ data: message, target: ws, type: '' }, ws));
     setTimeout(() => {
+      var found = false;
       this.connections.forEach((connection: IConnection) => {
-        if (connection.connection === ws) return;
-        ws.terminate();
+        if (connection.connection === ws) found = true;
       });
-    }, 30000);
+      if (!found) ws.close(1000, 'Authentication timeout');
+    }, 15000);
     // When the client responds to the ping in time (within the timeout), we state that the client is alive else we close the connection
     ws.on('pong', (): void => {
       this.connections.forEach((connection: IConnection) => {
@@ -47,20 +60,27 @@ export class Socket extends EventEmitter {
     });
   }
 
-  private async onMessage(message: wss.MessageEvent): Promise<void> {
+  private async onMessage(message: wss.MessageEvent, connection: wss.WebSocket): Promise<void> {
     const data: IMessage|null = this.parser.parse(message.data.toString());
 
     if (data == null) return;
 
-    const conectionsFounded = this.connections.find((connection: IConnection) => connection.id === data.from);
+    const connectionsFounded = this.connections.find((conn: IConnection) => conn.id === data.from);
 
-    if (!conectionsFounded || data.args[0] === 'register') {
+    if (!connectionsFounded || data.args[0] === 'register') {
       this.registerConnection(message.target, data);
       return;
     }
 
-    if (conectionsFounded && data.args[0] === 'unregister') {
-      this.unregisterConnection(conectionsFounded);
+    if (connectionsFounded && connectionsFounded.isSecure) {
+      if (connectionsFounded.secureKey !== data.secureKey) {
+        connection.close(1000, this.parser.toString(this.parser.format('arunacore', '401', ['unauthorized'], data.from)));
+        return;
+      }
+    }
+
+    if (connectionsFounded && data.args[0] === 'unregister') {
+      this.unregisterConnection(connectionsFounded);
       return;
     }
 
@@ -74,12 +94,22 @@ export class Socket extends EventEmitter {
     }
 
     // ping the sender to check if it's alive
-    if (!await this.ping(conectionsFounded)) {
+    if (!await this.ping(toConnectionsFounded)) {
       this.send(message.target, 'arunacore', '404', ['target', 'not-found'], data.from);
       return;
     }
 
+    if (toConnectionsFounded.isSecure && toConnectionsFounded.secureKey !== data.targetKey) {
+      this.send(message.target, 'arunacore', '401', ['unauthorized'], data.from);
+      return;
+    }
+
     this.emit('message', data);
+
+    if (data.secureKey) delete data.secureKey;
+    if (data.targetKey) delete data.targetKey;
+
+    toConnectionsFounded.connection.send(this.parser.toString(data));
   }
 
   /**
@@ -88,18 +118,34 @@ export class Socket extends EventEmitter {
    * @param info the original message
    */
   private async registerConnection(ws: wss.WebSocket, info: IMessage): Promise<void> {
-    const conectionsFounded = this.connections.find((connection: IConnection) => connection.id === info.from);
-    if (!conectionsFounded) {
+    const connectionsFounded = this.connections.find((connection: IConnection) => connection.id === info.from);
+    if (!connectionsFounded) {
       // Register connection
-      if (info.args.length <= 1) {
-        ws.send(this.parser.toString(this.parser.format('arunacore', '401', ['invalid', 'register', 'message'])));
+      if (info.args.length < 2) {
+        ws.send(this.parser.toString(this.parser.format('arunacore', '400', ['invalid', 'register', 'message'])));
       } else {
+        // TODO: Enable this when we have a stable version
+        /*
         // Let's check if core version matches the api necessities
         const coreMinimumVersion: string = info.args[1]; // Minimum version
         const coreMaximumVersion: string = info.args[2]; // Maximum version
 
         if (!semver.satisfies(process.env.npm_package_version || '', `>=${coreMinimumVersion} <=${coreMaximumVersion}`)) {
           ws.close(1000, this.parser.toString(this.parser.format('arunacore', '505', ['invalid', 'version'], info.from))); // closes the connection with the user, Message example: :arunacore 505 :invalid version [from-id]
+          return;
+        }
+        */
+
+        // Let's check the secure mode
+        var secureMode = false;
+        var secureKey = '';
+        if (info.secureKey) {
+          secureMode = true;
+          secureKey = info.secureKey;
+        }
+
+        if (this.requireAuth && !secureMode) {
+          ws.close(1000, this.parser.toString(this.parser.format('arunacore', '401', ['unauthorized'], info.from))); // closes the connection with the user, Message example: :arunacore 501 :unauthorized [from-id]
           return;
         }
 
@@ -109,18 +155,21 @@ export class Socket extends EventEmitter {
           isAlive: true,
           connection: ws,
           apiVersion: info.args[3],
+          isSecure: secureMode,
+          secureKey,
+          isSharded: false, // TODO: Implement sharding
         };
 
         this.connections.push(connection); // Add connection to list
         ws.send(this.parser.toString(this.parser.format('arunacore', '000', ['register-success'], info.from))); // sends a message to the user letting them know it's registered, Message example: :arunacore 000 :register-success
       }
     } else if (info.args[0] === 'register') {
-      if (!await this.ping(conectionsFounded)) {
+      if (!await this.ping(connectionsFounded)) {
         this.registerConnection(ws, info);
         return;
       }
       // Send a message to the client informing that the connection with this id is already registered
-      ws.send(this.parser.toString(this.parser.format('arunacore', '401', ['invalid', 'register', 'id-already-registered'], info.from))); // Message example: :arunacore 401 :invalid register id-already-registered [from-id]
+      ws.send(this.parser.toString(this.parser.format('arunacore', '403', ['invalid', 'register', 'id-already-registered'], info.from))); // Message example: :arunacore 401 :invalid register id-already-registered [from-id]
     }
   }
 
@@ -167,6 +216,8 @@ export class Socket extends EventEmitter {
     });
     this.logger.warn('Stopping WebSocket Server...');
     this.ws.close();
+    this.logger.warn('Stopping HTTP Server...');
+    this.httpServer.close();
     this.logger.info('WebSocket Stopped! Goodbye O/');
     if (this.isAutoLogEndEnable) autoLogEnd.deactivate();
     return Promise.resolve();

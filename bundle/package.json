@@ -1,19 +1,20 @@
 {
 	"name": "arunacore",
-	"version": "1.0.0-ALPHA.1",
+	"version": "1.0.0-ALPHA.2",
 	"description": "TODO",
 	"main": "build/bundle/src/start.js",
 	"scripts": {
-		"prestart": "npm run setup",
 		"start": "node build/bundle/src/start.js",
 		"setup": "node src/scripts/install.js",
 		"postsetup": "npm run build",
-		"cisetup": "node src/scripts/ciInstall.js && npm run build",
+		"cisetup": "node src/scripts/ciInstall.js",
+		"postcisetup": "npm run build",
 		"eslint:fix": "node src/scripts/runESLint.js",
 		"build": "node src/scripts/build.js",
 		"bumpVersion": "node src/scripts/bumpVersion.js",
 		"postbumpVersion": "npm run setup --ignore-scripts",
-		"pretest": "npm run setup && npm run eslint:fix",
+		"docker:cleanup": "node src/scripts/dockerCleanup.js",
+		"pretest": "npm run cisetup --ignore-scripts",
 		"test": "npm run build -- v clean test && node build/bundle/test/test.js"
 	},
 	"repository": {
@@ -27,10 +28,9 @@
 	},
 	"homepage": "https://github.com/ArunaBot/ArunaCore#readme",
 	"dependencies": {
-		"arunacore-api": "file:../api",
-		"@arunabot/core-cli": "file:../cli",
 		"@arunabot/core-http": "file:../http",
-		"@arunabot/core-websocket": "file:../websocket"
+		"@arunabot/core-websocket": "file:../websocket",
+		"arunacore-api": "file:../api"
 	},
 	"devDependencies": {
 		"@types/ws": "^8.5.3",
@@ -45,7 +45,7 @@
 		"eslint-plugin-promise": "^6.0.0",
 		"eslint-plugin-react": "^7.30.1",
 		"prettier": "^2.7.1",
-		"ts-project-bundle": "^0.0.10",
+		"ts-project-bundle": "^0.0.11",
 		"typescript": "^4.7.4",
 		"@types/node": "^18.0.1",
 		"@types/semver": "^7.3.10"

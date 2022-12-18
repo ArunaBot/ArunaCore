@@ -13,6 +13,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
       # Setup .npmrc file to publish to npm
       - name: Setup .npmrc (NPM)
         uses: actions/setup-node@v3
@@ -20,25 +21,46 @@ jobs:
           node-version: '12.x'
           registry-url: 'https://registry.npmjs.org'
           scope: '@arunabot'
-      - name: Update NPM
-        run: npm install -g npm@latest
+
+      - name: Enforce npm 8
+        run: npm install -g npm@8.x
+
+      - name: Get Current version
+        id: current_version
+        working-directory: ./api
+        run: echo ::set-output name=version::$(node -p "require('./package.json').version")
+
+      - name: Get current npm version
+        id: npm_version
+        run: echo ::set-output name=version::$(npm view arunacore-api version)
+      
+      - name: Compare versions and skip if same
+        id: compare_versions
+        if: ${{ steps.current_version.outputs.version == steps.npm_version.outputs.version }}
+        run: echo ::set-output name=skip::true && echo "Skipping publish as versions are same" && exit 0
+
       - name: Install dependencies
         working-directory: ./api
         run: npm ci
+
       - name: Prepare to publish
         working-directory: ./api
         run: npm run pdeploy
+
       - name: Publish to npm
         working-directory: ./api/out
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Setup .npmrc (GPR)
-        uses: actions/setup-node@v3
+
+  publish-docker:
+    needs: [publish]
+    if: needs.publish.result == 'success' && needs.publish.steps.compare_versions.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Update Docker Image
+        uses: peter-evans/repository-dispatch@v2
         with:
-          registry-url: 'https://npm.pkg.github.com'
-      - name: Publish to GPR
-        working-directory: ./api/out
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.BOT_SECRET }}
+          event-type: publish-docker-image
+          repository: ArunaBot/ArunaCore-Docker
