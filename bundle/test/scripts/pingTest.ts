@@ -16,5 +16,5 @@ async function pingTest({ loggerClient, client }: ITestOptions): Promise<void> {
 module.exports = {
   name: 'Ping Test',
   run: pingTest,
-  order: 2,
+  order: 4,
 };

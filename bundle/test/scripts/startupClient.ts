@@ -1,14 +1,14 @@
 import { ITestResponse, ITestOptions } from '../interfaces';
 import { IMessage, ArunaClient } from 'arunacore-api';
 
-function runStartupClient({ loggerClient, index }: ITestOptions): Promise<ITestResponse> {
+function runStartupClient1({ loggerClient, index }: ITestOptions): Promise<ITestResponse> {
   return new Promise((resolve, reject) => {
-    const client = new ArunaClient('localhost', 3000, 'client', loggerClient);
+    const client = new ArunaClient({ host: 'localhost', port: 3000, id: 'client', logger: loggerClient });
 
     client.connect();
 
     client.on('message', (message: IMessage) => {
-      loggerClient.info(client.getWSParser().toString(message));
+      loggerClient.info('1' + client.getWSParser().toString(message));
     });
 
     client.on('ready', () => {
@@ -34,7 +34,7 @@ function runStartupClient({ loggerClient, index }: ITestOptions): Promise<ITestR
 }
 
 module.exports = {
-  name: 'Startup Client',
-  run: runStartupClient,
+  name: 'Startup Client 1',
+  run: runStartupClient1,
   order: 1,
 };

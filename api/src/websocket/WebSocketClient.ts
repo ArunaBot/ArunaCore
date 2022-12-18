@@ -1,26 +1,45 @@
+import { IMessage, IWebsocketOptions } from '../interfaces';
 import { Logger, WebSocketParser, utils } from '../';
-import { IMessage } from '../interfaces';
 import { EventEmitter } from 'events';
 import ws from 'ws';
 
 export class ArunaClient extends EventEmitter {
   private WSParser: WebSocketParser;
+  private secureMode: boolean;
+  private shardMode: boolean;
+  private secureKey: string;
   private ws: ws.WebSocket;
   private logger: Logger;
   private host: string;
   private port: number;
   private id: string;
 
-  constructor(host: string, port: number, id: string, logger?: Logger) {
+  constructor(options: IWebsocketOptions) {
     super();
-    this.id = id;
-    this.host = host;
-    this.port = port;
+    this.id = options.id ?? 'client';
+    this.host = options.host ?? 'localhost';
+    this.port = options.port ?? 3000;
     this.WSParser = new WebSocketParser();
-    this.logger = logger ?? new Logger({ prefix: 'WSClient' });
+    this.logger = options.logger ?? new Logger({ prefix: 'WSClient' });
+
+    this.secureMode = options.secureMode ?? false;
+
+    if (this.secureMode) {
+      if (options.secureKey == null) throw new Error('Secure key is required for secure mode!');
+      this.secureKey = options.secureKey;
+    }
+
+    this.shardMode = options.shardMode ?? false;
+
+    if (this.shardMode && !this.secureMode) throw new Error('Shard mode requires secure mode!');
   }
 
-  public async connect(): Promise<void> {
+  public async connect(secureKey?: string): Promise<void> {
+    if (secureKey) {
+      this.secureKey = secureKey;
+      this.secureMode = true;
+    }
+
     this.ws = new ws(`ws://${this.host}:${this.port}`);
     return new Promise((resolve, reject) => {
       this.ws.on('message', (message) => { this.onMessage(message.toString()); });
@@ -43,8 +62,14 @@ export class ArunaClient extends EventEmitter {
     });
   }
 
-  public async send(command: string, args: string[], to?: string, type?: string): Promise<void> {
+  public async send(command: string, args: string[], to?: string, targetKey?: string, type?: string): Promise<void> {
     return new Promise((resolve, reject) => {
+      if (this.ws.readyState !== ws.OPEN) return reject(new Error('Connection is not open!'));
+      if (this.secureMode && this.secureKey == null) return reject(new Error('Secure key is required for secure mode!'));
+      if (this.secureMode) {
+        args.splice(0, 0, 'key:' + this.secureKey);
+        if (targetKey && targetKey !== '' && targetKey !== this.secureKey) args.splice(1, 0, 'targetKey:' + targetKey);
+      }
       const message = this.WSParser.format(this.id, command, args, to, type);
       this.ws.send(this.WSParser.toString(message), (err) => {
         if (err) {
@@ -75,14 +100,22 @@ export class ArunaClient extends EventEmitter {
           this.emit('message', parsedMessage);
         }
         break;
+      case '401':
+        this.emit('unauthorized', parsedMessage);
+        break;
+      case '403':
+        this.id = this.id + utils.randomString(5);
+        this.register();
+        break;
       default:
         this.emit('message', parsedMessage);
+        this.emit(parsedMessage.command, parsedMessage);
         break;
     }
   }
 
   private register(): void {
-    this.send('000', ['register', process.env.npm_package_version ?? '', process.env.npm_package_version ?? '']);
+    this.send('000', ['register', '1.0.0-ALPHA.x', '1.0.0-ALPHA.x', process.env.npm_package_version ?? '']); // [register, minimunCoreVersion, maximumCoreVersion, currentApiVersion]
   }
 
   public async ping(): Promise<boolean> {

@@ -9,14 +9,6 @@
 			"path": "bundle"
 		},
 		{
-			"name": "CLI",
-			"path": "cli"
-		},
-		{
-			"name": "Core",
-			"path": "core",
-		},
-		{
 			"name": "HTTP",
 			"path": "http"
 		},

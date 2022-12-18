@@ -1,49 +1,49 @@
 {
-  "name": "arunacore-api",
-  "version": "1.0.0-ALPHA.3",
-  "description": "TODO",
-  "main": "build/src/index.js",
-  "types": "src/index.ts",
-  "scripts": {
-    "start": "npm run build && node build/",
-    "build": "npx tsc --build && npx ts-project-bundle --out=out",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "pdeploy": "node scripts/prepublish.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ArunaBot/ArunaCore.git"
-  },
-  "author": "ArunaTeam",
-  "license": "GPL-3.0",
-  "bugs": {
-    "url": "https://github.com/ArunaBot/ArunaCore/issues"
-  },
-  "keywords": [
-    "management",
-    "aruna",
-    "websocket",
-    "api"
-  ],
-  "homepage": "https://github.com/ArunaBot/ArunaCore#readme",
-  "devDependencies": {
-    "@types/ws": "^8.5.3",
-    "@typescript-eslint/eslint-plugin": "^5.30.5",
-    "@typescript-eslint/parser": "^5.30.5",
-    "eslint": "^8.19.0",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-config-standard": "^17.0.0",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^4.2.1",
-    "eslint-plugin-promise": "^6.0.0",
-    "eslint-plugin-react": "^7.30.1",
-    "prettier": "^2.7.1",
-    "ts-project-bundle": "^0.0.11",
-    "typescript": "^4.7.4"
-  },
-  "dependencies": {
-    "chalk": "^4.1.2",
-    "ws": "^8.8.0"
-  }
+	"name": "arunacore-api",
+	"version": "1.0.0-ALPHA.4",
+	"description": "TODO",
+	"main": "build/src/index.js",
+	"types": "src/index.ts",
+	"scripts": {
+		"start": "npm run build && node build/",
+		"build": "npx tsc --build && npx ts-project-bundle --out=out",
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"pdeploy": "node scripts/prepublish.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ArunaBot/ArunaCore.git"
+	},
+	"author": "ArunaTeam",
+	"license": "GPL-3.0",
+	"bugs": {
+		"url": "https://github.com/ArunaBot/ArunaCore/issues"
+	},
+	"keywords": [
+		"management",
+		"aruna",
+		"websocket",
+		"api"
+	],
+	"homepage": "https://github.com/ArunaBot/ArunaCore#readme",
+	"devDependencies": {
+		"@types/ws": "^8.5.3",
+		"@typescript-eslint/eslint-plugin": "^5.30.5",
+		"@typescript-eslint/parser": "^5.30.5",
+		"eslint": "^8.19.0",
+		"eslint-config-prettier": "^8.5.0",
+		"eslint-config-standard": "^17.0.0",
+		"eslint-plugin-import": "^2.26.0",
+		"eslint-plugin-node": "^11.1.0",
+		"eslint-plugin-prettier": "^4.2.1",
+		"eslint-plugin-promise": "^6.0.0",
+		"eslint-plugin-react": "^7.30.1",
+		"prettier": "^2.7.1",
+		"ts-project-bundle": "^0.0.11",
+		"typescript": "^4.7.4"
+	},
+	"dependencies": {
+		"chalk": "^4.1.2",
+		"ws": "^8.8.0"
+	}
 }
