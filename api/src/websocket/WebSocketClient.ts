@@ -1,5 +1,6 @@
 import { IMessage, IWebsocketOptions } from '../interfaces';
-import { Logger, WebSocketParser, utils } from '../';
+import { Logger } from '@promisepending/logger.js';
+import { WebSocketParser, utils } from '../';
 import { EventEmitter } from 'events';
 import ws from 'ws';
 
@@ -7,8 +8,8 @@ export class ArunaClient extends EventEmitter {
   private WSParser: WebSocketParser;
   private secureMode: boolean;
   private shardMode: boolean;
-  private secureKey: string;
-  private ws: ws.WebSocket;
+  private secureKey: string | null = null;
+  private ws: ws.WebSocket | null = null;
   private logger: Logger;
   private host: string;
   private port: number;
@@ -42,20 +43,20 @@ export class ArunaClient extends EventEmitter {
 
     this.ws = new ws(`ws://${this.host}:${this.port}`);
     return new Promise((resolve, reject) => {
-      this.ws.on('message', (message) => { this.onMessage(message.toString()); });
+      this.ws!.on('message', (message) => { this.onMessage(message.toString()); });
 
-      this.ws.on('close', (code, reason) => { this.emit('close', code, reason); });
+      this.ws!.on('close', (code, reason) => { this.emit('close', code, reason); });
 
-      this.ws.on('error', (err) => { this.emit('error', err); });
+      this.ws!.on('error', (err) => { this.emit('error', err); });
 
-      this.ws.on('open', () => {
+      this.ws!.on('open', () => {
         this.logger.debug('Connected to server!');
         this.logger.debug('Registering client...');
         this.register();
         resolve();
       });
 
-      this.ws.on('error', (err) => {
+      this.ws!.on('error', (err) => {
         this.logger.error(err);
         reject(err);
       });
@@ -64,7 +65,7 @@ export class ArunaClient extends EventEmitter {
 
   public async send(command: string, args: string[], to?: string, targetKey?: string, type?: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (this.ws.readyState !== ws.OPEN) return reject(new Error('Connection is not open!'));
+      if (this.ws?.readyState !== ws.OPEN) return reject(new Error('Connection is not open!'));
       if (this.secureMode && this.secureKey == null) return reject(new Error('Secure key is required for secure mode!'));
       if (this.secureMode) {
         args.splice(0, 0, 'key:' + this.secureKey);
@@ -120,6 +121,7 @@ export class ArunaClient extends EventEmitter {
 
   public async ping(): Promise<boolean> {
     return new Promise((resolve, reject) => {
+      if (this.ws?.readyState !== ws.OPEN) return reject(new Error('Connection is not open!'));
       this.ws.ping((err: any) => {
         if (err) {
           this.logger.error(err);
@@ -144,7 +146,7 @@ export class ArunaClient extends EventEmitter {
       await this.send('000', ['unregister']);
 
       await utils.sleep(3000);
-      this.ws.close(1000);
+      this.ws?.close(1000);
       return resolve();
     });
   }

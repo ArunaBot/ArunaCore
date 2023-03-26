@@ -1,5 +1,6 @@
+import { Logger } from '@promisepending/logger.js';
 import { Socket } from '@arunabot/core-websocket';
-import { Logger } from 'arunacore-api';
+
 const logger = new Logger({ debug: true, prefix: 'arunacore' });
 
 console.log('Initializing ArunaCore');

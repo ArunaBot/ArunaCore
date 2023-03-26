@@ -1,4 +1,4 @@
-name: Publish API to NPM and GPR
+name: Publish API to NPM
 
 on:
   workflow_run:

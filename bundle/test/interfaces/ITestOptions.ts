@@ -1,5 +1,6 @@
-import { Logger, ArunaClient } from 'arunacore-api';
+import { Logger } from '@promisepending/logger.js';
 import { Socket } from '@arunabot/core-websocket';
+import { ArunaClient } from 'arunacore-api';
 
 export interface ITestOptions {
     loggerClient: Logger,

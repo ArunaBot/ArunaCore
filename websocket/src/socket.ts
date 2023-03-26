@@ -1,5 +1,6 @@
-import { IMessage, Logger, WebSocketParser } from 'arunacore-api';
+import { IMessage, WebSocketParser } from 'arunacore-api';
 import { IConnection, ISocketOptions } from './interfaces';
+import { Logger } from '@promisepending/logger.js';
 import { HTTPServer } from '@arunabot/core-http';
 import { EventEmitter } from 'events';
 import { autoLogEnd } from './utils';
@@ -26,7 +27,22 @@ export class Socket extends EventEmitter {
     });
     this.httpServer.enableUpgradeRequired();
     this.httpServer.listen(port);
-    this.ws = new wss.Server({ server: this.httpServer.getServer() }); // Creates a new websocket server
+    this.ws = new wss.Server({
+      server: this.httpServer.getServer()!,
+      perMessageDeflate: {
+        zlibDeflateOptions: {
+          chunkSize: (4 * 1024),
+          memLevel: 7,
+          level: 3,
+        },
+        zlibInflateOptions: {
+          chunkSize: 10 * 1024,
+        },
+        clientNoContextTakeover: false,
+        serverNoContextTakeover: false,
+        threshold: (4 * 1024),
+      },
+    }); // Creates a new websocket server
     this.ws.on('connection', (ws) => { this.onConnection(ws); }); // When a connection is made, call the onConnection function
     this.logger = logger;
     this.pingLoop();
