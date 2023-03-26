@@ -38,6 +38,7 @@
 	},
 	"dependencies": {
 		"@arunabot/core-http": "file:../http",
+		"@promisepending/logger.js": "^1.0.4",
 		"arunacore-api": "file:../api",
 		"semver": "^7.3.7",
 		"ws": "^8.13.0"

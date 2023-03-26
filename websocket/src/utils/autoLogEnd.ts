@@ -1,4 +1,4 @@
-import { Logger } from 'arunacore-api';
+import { Logger } from '@promisepending/logger.js';
 import { Socket } from '../';
 
 var exited = false;

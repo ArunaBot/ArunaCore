@@ -30,6 +30,7 @@
 	"dependencies": {
 		"@arunabot/core-http": "file:../http",
 		"@arunabot/core-websocket": "file:../websocket",
+		"@promisepending/logger.js": "^1.0.4",
 		"arunacore-api": "file:../api"
 	},
 	"devDependencies": {

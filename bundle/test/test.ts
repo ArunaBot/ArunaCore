@@ -1,6 +1,7 @@
-import { Logger, ArunaClient } from 'arunacore-api';
+import { Logger } from '@promisepending/logger.js';
 import { Socket } from '@arunabot/core-websocket';
 import { ITestResponse } from './interfaces';
+import { ArunaClient } from 'arunacore-api';
 import chalk from 'chalk';
 import path from 'path';
 import fs from 'fs';

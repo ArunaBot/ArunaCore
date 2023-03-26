@@ -1,4 +1,4 @@
-import { Logger } from '../logger';
+import { Logger } from '@promisepending/logger.js';
 
 export interface IWebsocketOptions {
     host: string

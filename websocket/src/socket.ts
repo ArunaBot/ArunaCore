@@ -1,5 +1,6 @@
-import { IMessage, Logger, WebSocketParser } from 'arunacore-api';
+import { IMessage, WebSocketParser } from 'arunacore-api';
 import { IConnection, ISocketOptions } from './interfaces';
+import { Logger } from '@promisepending/logger.js';
 import { HTTPServer } from '@arunabot/core-http';
 import { EventEmitter } from 'events';
 import { autoLogEnd } from './utils';

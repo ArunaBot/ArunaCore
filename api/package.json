@@ -43,7 +43,7 @@
 		"typescript": "^5.0.2"
 	},
 	"dependencies": {
-		"chalk": "^4.1.2",
+		"@promisepending/logger.js": "^1.0.4",
 		"ws": "^8.13.0"
 	}
 }
