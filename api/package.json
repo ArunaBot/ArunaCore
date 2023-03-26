@@ -1,6 +1,6 @@
 {
 	"name": "arunacore-api",
-	"version": "1.0.0-ALPHA.4",
+	"version": "1.0.0-ALPHA.5",
 	"description": "TODO",
 	"main": "build/src/index.js",
 	"types": "src/index.ts",
