@@ -27,7 +27,7 @@ export class Socket extends EventEmitter {
     this.httpServer.enableUpgradeRequired();
     this.httpServer.listen(port);
     this.ws = new wss.Server({
-      server: this.httpServer.getServer(),
+      server: this.httpServer.getServer()!,
       perMessageDeflate: {
         zlibDeflateOptions: {
           chunkSize: (4 * 1024),

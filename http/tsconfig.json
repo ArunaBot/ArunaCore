@@ -1,7 +1,9 @@
 {
   "allowSyntheticDefaultImports": true,
   "compilerOptions": {
+    "strict": true,
     "lib": ["ES6", "DOM", "ES2015", "ES2017"],
+    "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
     "target": "ES6",
     "module": "commonjs",

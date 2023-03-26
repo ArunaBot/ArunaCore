@@ -1,10 +1,10 @@
 import { createServer, Server, STATUS_CODES } from 'http';
 
 export class HTTPServer {
+  private server: Server | null = null;
   private isUpgradeRequired = false;
   private routes: any[] = [];
   private isListen = false;
-  private server: Server;
 
   constructor(port?: number) {
     if (port) this.listen(port);
@@ -54,26 +54,26 @@ export class HTTPServer {
   }
 
   public close(): void {
-    this.server.close();
+    this.server?.close();
   }
 
-  public getServer(): Server {
+  public getServer(): Server | null {
     return this.server;
   }
 
   public on(event: string, callback: any): Server {
-    return this.server.on(event, callback);
+    return this.server!.on(event, callback);
   }
 
   public once(event: string, callback: any): Server {
-    return this.server.once(event, callback);
+    return this.server!.once(event, callback);
   }
 
   public removeListener(event: string, callback: any): Server {
-    return this.server.removeListener(event, callback);
+    return this.server!.removeListener(event, callback);
   }
 
   public removeAllListeners(event: string): Server {
-    return this.server.removeAllListeners(event);
+    return this.server!.removeAllListeners(event);
   }
 }
