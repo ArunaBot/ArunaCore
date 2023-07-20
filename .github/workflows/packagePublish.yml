@@ -18,7 +18,7 @@ jobs:
       - name: Setup .npmrc (NPM)
         uses: actions/setup-node@v3
         with:
-          node-version: '12.x'
+          node-version: '14.x'
           registry-url: 'https://registry.npmjs.org'
           scope: '@arunabot'
 
