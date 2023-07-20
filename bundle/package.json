@@ -1,6 +1,6 @@
 {
 	"name": "arunacore",
-	"version": "1.0.0-ALPHA.3",
+	"version": "1.0.0-ALPHA.4",
 	"description": "TODO",
 	"main": "build/bundle/src/main/start.js",
 	"scripts": {
