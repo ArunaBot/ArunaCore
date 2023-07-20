@@ -1,0 +1,64 @@
+# v1.0.0-ALPHA.4
+
+- [BREAKING] Drop support for all versions below Node.js v14.14.0
+  - Our build system was improved and can't build in and older versions anymore, but may work if you use a pre-built version
+  - If you use docker, don't worry, the docker image is based on Node.js v16
+
+- [NEW] Add configuration system
+  - Now you can configure the system (including server port) editing the  `bundle/config/config.json` file
+  - You can also use enviroment `ARUNA_<PROPERTY>` variables to override the configuration file
+
+- [NEW] Add `masterkey` to allow access to restricted endpoints and commands
+  - You can set the masterkey in the configuration file or in the enviroment variable `ARUNA_MASTERKEY`
+  - If a masterkey is not provided, all restricted endpoints and commands will be disabled and will return a `503` error
+
+- [FIX] Critical issue in the websocket message parser
+  - If the client type was defined, the parser mistakenly considered the type as the client's ID and vice versa.
+
+- [CHORE] Update dependencies
+
+- [CHORE] Create a changelog file to keep track of changes
+  - Probably includes all changes from previous versions
+
+# v1.0.0-ALPHA.3
+
+- [BREAKING] Change to external log library
+  - Now we use [@promisepending/logger.js](https://www.npmjs.com/package/@promisepending/logger.js) and doesn't provide a custom logger anymore
+
+- [NEW] Add compression to websocket server and client
+
+- [FIX] Some null pointer errors
+
+- [CHORE] Update dependencies
+
+# v1.0.0-ALPHA.2
+
+- [NEW] Implement secure mode
+
+- [NEW] Implement HTTP system
+  - Add `/healthCheck` endpoint
+
+- [NEW] Add docker support
+  - Check [docker repository](https://github.com/ArunaBot/ArunaCore-Docker)
+
+- [CHORE] Delete unused files and modules
+
+- [CHORE] Improve tests
+
+- [CHORE] Update dependencies
+
+# v1.0.0-ALPHA.1
+
+- [FIXED] Some type errors
+
+- [NEW] Some improvements to the log system
+
+- [NEW] Create AutoLogEnd to prevent unexpected ends
+
+- [CHORE] Reduce build time
+
+- [CHORE] Update dependencies
+
+# v1.0.0-ALPHA.0
+
+- [NEW] Initial release
