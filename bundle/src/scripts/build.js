@@ -36,11 +36,11 @@ if (argv.includes('clean')) {
     var d = '../' + a + '/build';
     var out = '../' + a + '/out';
     if (fs.existsSync(d)) {
-      fs.rmdirSync(d, { recursive: true });
+      fs.rmSync(d, { recursive: true });
       if (verbose) console.log(`Deleted ${d}!`);
     }
     if (fs.existsSync(out)) {
-      fs.rmdirSync(out, { recursive: true });
+      fs.rmSync(out, { recursive: true });
       if (verbose) console.log(`Deleted ${out}!`);
     }
   });
