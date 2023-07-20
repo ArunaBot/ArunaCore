@@ -1,0 +1,13 @@
+{
+    "fileVersion": 1.0,
+    "id": "arunacore",
+    "debug": false,
+    "port": 3000,
+    "autoLogEnd": true,
+    "masterkey": "changeme",
+    "requireAuth": false,
+    "logger": {
+        "coloredBackground": false,
+        "allLineColored": true
+    }
+}
