@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-declaration-merging */
 import { IMessage, IWebsocketOptions } from '../interfaces';
 import { Logger } from '@promisepending/logger.js';
 import { WebSocketParser, utils } from '../';
