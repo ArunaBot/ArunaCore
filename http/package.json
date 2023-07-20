@@ -20,7 +20,7 @@
 	},
 	"homepage": "https://github.com/ArunaBot/ArunaCore#readme",
 	"engines": {
-		"node": ">=14.14.0"
+		"node": ">=16.0.0"
 	},
 	"devDependencies": {
 		"@types/node": "^20.4.2",

@@ -28,7 +28,7 @@
 	},
 	"homepage": "https://github.com/ArunaBot/ArunaCore#readme",
 	"engines": {
-		"node": ">=14.14.0"
+		"node": ">=16.0.0"
 	},
 	"dependencies": {
 		"@arunabot/core-http": "file:../http",

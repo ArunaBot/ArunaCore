@@ -1,8 +1,8 @@
 # v1.0.0-ALPHA.4
 
-- [BREAKING] Drop support for all versions below Node.js v14.14.0
-  - Our build system was improved and can't build in and older versions anymore, but may work if you use a pre-built version
-  - If you use docker, don't worry, the docker image is based on Node.js v16
+- [BREAKING] Drop support for all versions below Node.js v16.0.0
+  - Our build system was improved and can't build in version 14 or lower anymore, but may work if you use a pre-built version
+  - Some dependencies dropped support for version 16 or lower, so we had to drop support too
 
 - [NEW] Add configuration system
   - Now you can configure the system (including server port) editing the  `bundle/config/config.json` file
