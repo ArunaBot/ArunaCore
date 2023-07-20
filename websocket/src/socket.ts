@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-declaration-merging */
 import { IMessage, WebSocketParser } from 'arunacore-api';
 import { IConnection, ISocketOptions } from './interfaces';
 import { Logger } from '@promisepending/logger.js';
@@ -20,11 +21,6 @@ export class Socket extends EventEmitter {
   constructor(port: number, logger: Logger, options?: ISocketOptions) {
     super();
     this.httpServer = new HTTPServer();
-    this.httpServer.registerRoute('/healthCheck', 'get', (req: any, res: any) => {
-      res.write('OK');
-      res.statusCode = 200;
-      return res.end();
-    });
     this.httpServer.enableUpgradeRequired();
     this.httpServer.listen(port);
     this.ws = new wss.Server({

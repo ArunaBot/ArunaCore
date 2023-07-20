@@ -7,6 +7,11 @@ export class HTTPServer {
   private isListen = false;
 
   constructor(port?: number) {
+    this.registerRoute('/healthCheck', 'get', (_req: any, res: any) => {
+      res.write('OK');
+      res.statusCode = 200;
+      return res.end();
+    });
     if (port) this.listen(port);
   }
 
