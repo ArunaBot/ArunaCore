@@ -3,7 +3,7 @@ import { IMessage, ArunaClient } from 'arunacore-api';
 
 function runStartupClient3({ loggerClient, index }: ITestOptions): Promise<ITestResponse> {
   return new Promise((resolve, reject) => {
-    const client = new ArunaClient({ host: 'localhost', port: 3000, id: 'client3', logger: loggerClient });
+    const client = new ArunaClient({ host: 'localhost', port: 3000, id: 'client3-debug', logger: loggerClient });
 
     client.connect('test3');
 

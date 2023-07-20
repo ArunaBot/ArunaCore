@@ -8,7 +8,7 @@ async function sendMessage1Test({ loggerClient, client2, client3 }: ITestOptions
       return reject(new Error('Message 1 Timeout'));
     }, 10000);
     client3.once('999', (message) => {
-      loggerClient.info('Message 1 Received: ' + message);
+      loggerClient.info('Message 1 Received: ', message);
       clearTimeout(timeout);
       return resolve();
     });
