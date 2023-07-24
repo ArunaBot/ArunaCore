@@ -77,7 +77,7 @@ async function run(): Promise<void> {
   checks = tests.length;
   await runTests();
   if (testFailed) {
-    logger.error('1 or more tests failed. Please check what happened.');
+    logger.error('One or more tests failed. Please check what happened.');
     return process.exit(1);
   }
   logger.info('Tests successfully completed!');
