@@ -24,8 +24,14 @@
   - You can set the masterkey in the configuration file or in the enviroment variable `ARUNA_MASTERKEY`
   - If a masterkey is not provided, all restricted endpoints and commands will be disabled and will return a `503` error
 
+- [NEW] Create a connection structure
+  - Usefull to store and manipulate connections
+
 - [FIX] Critical issue in the websocket message parser
   - If the client type was defined, the parser mistakenly considered the type as the client's ID and vice versa.
+
+- [FIX] Timeouts not being cleared
+  - This also reduces test time
 
 - [CHORE] Update dependencies
 

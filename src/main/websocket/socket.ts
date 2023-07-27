@@ -13,7 +13,6 @@ export class Socket extends EventEmitter {
   private logger: Logger;
   private isAutoLogEndEnable: boolean;
   private requireAuth: boolean;
-  private timeouts: any[] = [];
   private parser = new WebSocketParser();
   private httpServer: HTTPServer;
   private masterKey: string | null;
@@ -90,11 +89,6 @@ export class Socket extends EventEmitter {
   public async finishWebSocket(): Promise<void> {
     this.logger.warn('Finishing Connections...');
     this.connectionManager.shutdown();
-
-    this.logger.warn('Stopping Timeouts...');
-    this.timeouts.forEach((timeoutO: any) => {
-      clearTimeout(timeoutO.timeout);
-    });
 
     this.logger.warn('Stopping WebSocket Server...');
     this.ws.close();

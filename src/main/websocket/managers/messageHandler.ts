@@ -1,6 +1,6 @@
 import { IMessage, WebSocketParser } from 'arunacore-api';
 import { ConnectionManager } from './connectionManager';
-import { IConnection } from '../../interfaces';
+import { ConnectionStructure } from '../structures';
 import { Socket } from '../socket';
 import * as wss from 'ws';
 
@@ -31,8 +31,8 @@ export class MessageHandler {
       return;
     }
 
-    if (connectionFounded && connectionFounded.isSecure) {
-      if (connectionFounded.secureKey !== data.secureKey) {
+    if (connectionFounded && connectionFounded.getIsSecure()) {
+      if (connectionFounded.getSecureKey() !== data.secureKey) {
         connection.close(1000, this.parser.formatToString('arunacore', '401', ['unauthorized'], data.from));
         return;
       }
@@ -58,7 +58,7 @@ export class MessageHandler {
       return;
     }
 
-    if (toConnectionsFounded.isSecure && toConnectionsFounded.secureKey !== data.targetKey) {
+    if (toConnectionsFounded.getIsSecure() && toConnectionsFounded.getSecureKey() !== data.targetKey) {
       this.socket.send(message.target, 'arunacore', '401', ['unauthorized'], data.from);
       return;
     }
@@ -68,32 +68,46 @@ export class MessageHandler {
     if (data.secureKey) delete data.secureKey;
     if (data.targetKey) delete data.targetKey;
 
-    toConnectionsFounded.connection.send(this.parser.toString(data));
+    toConnectionsFounded.send(data);
   }
 
-  private async defaultCommandExecutor(connection: IConnection, message: IMessage): Promise<boolean> {
-    var forceTrue = false;
+  /**
+   * Default command executor
+   * @param connection ConnectionStructure
+   * @param message IMessage
+   * @returns Promise<boolean> isInternal, if true, the message will not be sent to the target
+   * @private
+   */
+  private async defaultCommandExecutor(connection: ConnectionStructure, message: IMessage): Promise<boolean> {
+    const command = message.command;
+    var isInternal = true;
 
-    if (!message.to || (this.masterKey && message.args.includes(this.masterKey))) forceTrue = true;
-
-    switch (message.command) {
+    switch (command) {
       // Get the list of all current connections alive ids
       case '015':
         if (!this.masterKey) {
-          this.socket.send(connection.connection, 'arunacore', '503', ['service', 'unavaliable'], message.from);
-          return Promise.resolve(true);
+          connection.send(this.parser.format('arunacore', '503', ['service', 'unavaliable'], message.from));
+          break;
         }
         if ((message.args.length !== 1) || (this.masterKey !== message.args[0])) {
-          this.socket.send(connection.connection, 'arunacore', '401', ['unauthorized'], message.from);
-          return Promise.resolve(true);
+          connection.send(this.parser.format('arunacore', '401', ['unauthorized'], message.from));
+          break;
         }
-        var ids: string[] = this.connectionManager.getAliveConnections().map((connection) => connection.id);
-        this.socket.send(connection.connection, 'arunacore', '015', ids, message.from);
-        return Promise.resolve(true);
+        var ids: string[] = Array.from(this.connectionManager.getAliveConnections().keys());
+        connection.send(this.parser.format('arunacore', '015', ids, message.from));
+        break;
       case '000':
-        return Promise.resolve(true);
+        break;
       default:
-        return Promise.resolve(forceTrue);
+        isInternal = false;
+        break;
     }
+
+    // Prevents leaking of the master key
+    if (!message.to || (this.masterKey && message.args.includes(this.masterKey))) isInternal = true;
+    // Reserves the commands from 000 to 099 for internal use
+    else if (!(isNaN(Number(command))) && (Number(command) >= 0 && Number(command) <= 99)) isInternal = true;
+
+    return Promise.resolve(isInternal);
   }
 }

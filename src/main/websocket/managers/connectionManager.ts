@@ -1,11 +1,12 @@
 import { IMessage, WebSocketParser } from 'arunacore-api';
+import { ConnectionStructure } from '../structures';
 import { Logger } from '@promisepending/logger.js';
-import { IConnection } from '../../interfaces';
 import { Socket } from '../socket';
 import * as wss from 'ws';
 
 export class ConnectionManager {
-  private connections: IConnection[] = [];
+  private timeouts: Map<wss.WebSocket, ReturnType<typeof setTimeout>> = new Map();
+  private connections: Map<string, ConnectionStructure> = new Map();
   private parser: WebSocketParser;
   private pingLoopTimeout: any;
   private requireAuth: boolean;
@@ -23,21 +24,12 @@ export class ConnectionManager {
 
   public onConnection(ws: wss.WebSocket):void {
     ws.on('message', (message) => this.socket.getMessageHandler().onMessage({ data: message, target: ws, type: '' }, ws));
-    setTimeout(() => {
-      var found = false;
-      this.connections.forEach((connection: IConnection) => {
-        if (connection.connection === ws) found = true;
-      });
-      if (!found) ws.close(1000, 'Authentication timeout');
-    }, 15000);
-    // When the client responds to the ping in time (within the timeout), we state that the client is alive else we close the connection
-    ws.on('pong', (): void => {
-      this.connections.forEach((connection: IConnection) => {
-        if (connection.connection === ws) {
-          connection.isAlive = true;
-        }
-      });
-    });
+    this.timeouts.set(ws,
+      setTimeout(() => {
+        const found = Array.from(this.connections.entries()).find(([, connection]) => connection.getConnection() === ws);
+        if (!found) ws.close(1000, 'Authentication timeout');
+      }, 15000),
+    );
   }
 
   /**
@@ -46,23 +38,13 @@ export class ConnectionManager {
    * @param info the original message
    */
   public async registerConnection(ws: wss.WebSocket, info: IMessage): Promise<void> {
-    const connectionFounded = this.connections.find((connection: IConnection) => connection.id === info.from);
+    const connectionFounded = this.connections.get(info.from);
     if (!connectionFounded) {
       // Register connection
       if (info.args.length < 2) {
         ws.send(this.parser.formatToString('arunacore', '400', ['invalid', 'register', 'message']));
       } else {
-        // TODO: Enable this when we have a stable version
-        /*
-        // Let's check if core version matches the api necessities
-        const coreMinimumVersion: string = info.args[1]; // Minimum version
-        const coreMaximumVersion: string = info.args[2]; // Maximum version
-
-        if (!semver.satisfies(process.env.npm_package_version || '', `>=${coreMinimumVersion} <=${coreMaximumVersion}`)) {
-          ws.close(1000, this.parser.formatToString('arunacore', '505', ['invalid', 'version'], info.from)); // closes the connection with the user, Message example: :arunacore 505 :invalid version [from-id]
-          return;
-        }
-        */
+        // TODO: Create a good way to check if the client is using a supported api version
 
         // Let's check the secure mode
         var secureMode = false;
@@ -77,7 +59,7 @@ export class ConnectionManager {
           return;
         }
 
-        const connection: IConnection = {
+        const connection = new ConnectionStructure({
           id: info.from,
           type: info.type,
           isAlive: true,
@@ -86,10 +68,13 @@ export class ConnectionManager {
           isSecure: secureMode,
           secureKey,
           isSharded: false, // TODO: Implement sharding
-        };
+        }, this.logger, this.parser);
 
-        this.connections.push(connection); // Add connection to list
+        this.connections.set(info.from, connection); // Add connection to list
         ws.send(this.parser.formatToString('arunacore', '000', ['register-success'], info.from)); // sends a message to the user letting them know it's registered, Message example: :arunacore 000 :register-success
+
+        this.logger.info(`Connection ${info.from} registered!`);
+        if (this.timeouts.has(ws)) clearTimeout(this.timeouts.get(ws));
       }
     } else if (info.args[0] === 'register') {
       if (!await this.ping(connectionFounded)) {
@@ -103,37 +88,29 @@ export class ConnectionManager {
     }
   }
 
-  public unregisterConnection(connection: IConnection): void {
-    const index = this.connections.indexOf(connection);
-    if (index !== -1) {
-      this.connections.splice(index, 1);
+  public async unregisterConnection(connection: ConnectionStructure): Promise<void> {
+    if (await this.ping(connection)) {
+      connection.send(this.parser.format('arunacore', '000', ['unregister-success', ', ', 'goodbye!'], connection.getID()));
+      connection.close(1000);
     }
 
-    connection.connection.send(this.parser.formatToString('arunacore', '000', ['unregister-success', ', ', 'goodbye!'], connection.id));
-
-    setTimeout(async () => {
-      if (await this.ping(connection)) {
-        connection.connection.close(1000);
-      }
-    }, 5000);
+    this.connections.delete(connection.getID());
   }
 
   /**
-   * Send a ping for a specific connection
+   * Send a ping for a specific connection and remove it from the list if it's dead
    * @param connection the connection to ping
    * @returns {Promise<boolean>} a promise with a boolean value if the connection is alive [True] for alive and [False] for terminated
    */
-  public async ping(connection: IConnection): Promise<boolean> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (!connection.isAlive) {
-          connection.connection.terminate();
-          this.connections = this.connections.filter((connectionChecker: IConnection) => connectionChecker.id !== connection.id);
-          resolve(false);
-        } else resolve(true);
-      }, 5000);
-      connection.connection.ping();
-    });
+  public async ping(connection: ConnectionStructure): Promise<boolean> {
+    const pingResult = await connection.ping();
+
+    if (!pingResult) {
+      this.logger.warn(`Connection ${connection.getID()} appears to be dead, removing it from the list...`);
+      this.connections.delete(connection.getID());
+    }
+
+    return pingResult;
   }
 
   /**
@@ -148,40 +125,40 @@ export class ConnectionManager {
    * Sends a ping message to all the connections
    */
   public massPing(): void {
-    this.connections.forEach((connection: IConnection) => {
-      connection.connection.ping();
-      connection.isAlive = false;
-      setTimeout(() => {
-        if (!connection.isAlive) {
-          connection.connection.terminate();
-          this.connections = this.connections.filter((connectionChecker: IConnection) => connectionChecker.id !== connection.id);
-        }
-      }, 5000);
+    this.connections.forEach((connection) => {
+      this.ping(connection);
     });
   }
 
   public shutdown(): void {
-    this.connections.forEach((connection: IConnection) => {
-      this.close(connection.connection, 'ArunaCore is Shutting Down', 1012);
+    this.connections.forEach((connection) => {
+      connection.close(1012, 'ArunaCore is Shutting Down');
+      this.connections.delete(connection.getID());
     });
     this.logger.warn('Stopping ping loop...');
     clearInterval(this.pingLoopTimeout);
     this.pingLoopTimeout = null;
   }
 
-  public close(connection: wss.WebSocket, reason?: string, code = 1000):void {
+  /**
+   * @param connection
+   * @param reason
+   * @param code
+   * @deprecated Use connection.close() instead
+   */
+  public close(connection: ConnectionStructure, reason?: string, code = 1000): void {
     connection.close(code, reason);
   }
 
-  public getConnections(): IConnection[] {
+  public getConnections(): Map<string, ConnectionStructure> {
     return this.connections;
   }
 
-  public getAliveConnections(): IConnection[] {
-    return this.connections.filter((connection: IConnection) => connection.isAlive);
+  public getAliveConnections(): Map<string, ConnectionStructure> {
+    return new Map(Array.from(this.connections).filter(([, connection]) => connection.getIsAlive()));
   }
 
-  public getConnection(id: string): IConnection|undefined {
-    return this.connections.find((connection: IConnection) => connection.id === id);
+  public getConnection(id: string): ConnectionStructure | undefined {
+    return this.connections.get(id);
   }
 }
