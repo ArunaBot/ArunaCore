@@ -79,14 +79,6 @@ async function run(): Promise<void> {
     tests.push(eventFunction);
   }
 
-  /*
-  jsfiles.forEach(async (file) => {
-    const eventFunction = require(`${scriptDir}/${file}`);
-    logger.info(`=> ${chalk.blueBright(eventFunction.name)}`);
-    tests.push(eventFunction);
-  });
-  */
-
   tests.sort((a, b) => a.order - b.order);
   checks = tests.length;
   await runTests();
