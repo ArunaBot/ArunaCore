@@ -12,18 +12,21 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
       - name: Install Node v16
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
+
       - name: Enforce npm 8
         run: npm install -g npm@8.x
+
       - name: Run CI-Setup
-        working-directory: ./bundle
-        run: npm run cisetup
+        run: npm run ci
+
       - name: Run ESLint
-        working-directory: ./bundle
         run: npm run eslint:fix
+
       - name: Commit changes
         uses: EndBug/add-and-commit@v4
         with:

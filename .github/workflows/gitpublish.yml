@@ -7,61 +7,94 @@ on:
     branches: [main]
 
 jobs:
-  job1:
+  tag:
     name: Publish Tag
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
       - name: "Refresh tags"
         id: refresh-tag
         run: git fetch --tags --force
+
       - id: set_var
         name: Get Version
-        run: |
-          content=`cat ./bundle/package.json`
-          # the following lines are only required for multi line json
-          content="${content//'%'/'%25'}"
-          content="${content//$'\n'/'%0A'}"
-          content="${content//$'\r'/'%0D'}"
-          # end of optional handling for multi line json
-          echo "::set-output name=packageJson::$content"
+        run: echo ::set-output name=version::$(node -p "require('./package.json').version")
+
       - name: Push Tag
         id: tag
         uses: anothrNick/github-tag-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
-          CUSTOM_TAG: "v${{ fromJson(steps.set_var.outputs.packageJson).version }}"
-  job2:
-    needs: job1
+          CUSTOM_TAG: "v${{ steps.set_var.outputs.version }}"
+  dist:
+    needs: tag
+    name: Create Dist Files
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+      
+      - name: Enforce npm 8
+        run: npm install -g npm@8.x
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Generate Dist Files
+        run: npm run dist
+  release:
+    needs: dist
     name: Publish Release
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
       - name: "Refresh tags"
         id: tag
         run: git fetch --tags --force
+
       - id: set_var
         name: Get Version
-        run: |
-          content=`cat ./bundle/package.json`
-          # the following lines are only required for multi line json
-          content="${content//'%'/'%25'}"
-          content="${content//$'\n'/'%0A'}"
-          content="${content//$'\r'/'%0D'}"
-          # end of optional handling for multi line json
-          echo "::set-output name=packageJson::$content"
+        run: echo ::set-output name=version::$(node -p "require('./package.json').version")
+
       - name: Echo Debug 
-        run: |
-          echo "${{ fromJson(steps.set_var.outputs.packageJson).version }}"
+        run: echo "${{ steps.set_var.outputs.version }}"
+
       - name: Create GitHub release
         uses: Roang-zero1/github-create-release-action@master
         with:
           prerelease_regex: ^v[0-9]\.[0-9]\.[0-9]\-
-          created_tag: v${{ fromJson(steps.set_var.outputs.packageJson).version }}
+          created_tag: v${{ steps.set_var.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload release artifacts
+        uses: Roang-zero1/github-upload-release-artifacts-action@master
+        with:
+          args: "dist/arunacore.zip"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-docker:
+    needs: release
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Trigger Update Docker Image
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.BOT_SECRET }}
+          event-type: publish-docker-image
+          repository: ArunaBot/ArunaCore-Docker

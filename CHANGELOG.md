@@ -4,6 +4,18 @@
   - Our build system was improved and can't build in version 14 or lower anymore, but may work if you use a pre-built version
   - Some dependencies dropped support for version 16 or lower, so we had to drop support too
 
+- [BREAKING] ArunaCore is now a ES module
+  - This doesn't affect the api, so your code probably will work without issues
+
+- [CHANGE] We changed the project structure
+  - Say goodbye to multiples `node_modules` folders (we now use a single in the root and another in api only)
+  - Now we use a single `package.json` file in the root of the project (and another in api only)
+  - Now we use a single `tsconfig.json` file in the root of the project (and another in api only)
+
+- [CHANGE] Build system was improved
+  - Since we have abandoned the multiple modules structure, we can now use a single build system
+  - This includes the api (you don't need to build it separately anymore)
+
 - [NEW] Add configuration system
   - Now you can configure the system (including server port) editing the  `bundle/config/config.json` file
   - You can also use enviroment `ARUNA_<PROPERTY>` variables to override the configuration file
