@@ -1,10 +1,32 @@
-/* eslint-disable @typescript-eslint/no-unsafe-declaration-merging */
-import { IMessage, IWebsocketOptions } from '../interfaces';
 import { Logger } from '@promisepending/logger.js';
+import { IWebsocketOptions } from '../interfaces';
 import { WebSocketParser, utils } from '../';
 import { EventEmitter } from 'events';
 import ws from 'ws';
 
+/**
+ * Main class for the api client
+ * @class ArunaClient
+ * @extends {EventEmitter}
+ * @example
+ * const { ArunaClient } = require('aruna-api');
+ * const client = new ArunaClient({
+ *  host: 'localhost',
+ *  port: 3000,
+ *  secureMode: false,
+ *  shardMode: false,
+ *  secureKey: null,
+ *  logger: null,
+ *  id: 'client'
+ * });
+ * client.on('ready', () => {
+ *  console.log('Client is ready!');
+ * });
+ * client.on('message', (message) => {
+ *  console.log(message);
+ * });
+ * client.connect(); // optional: secureKey
+ */
 export class ArunaClient extends EventEmitter {
   private WSParser: WebSocketParser;
   private secureMode: boolean;
@@ -38,6 +60,11 @@ export class ArunaClient extends EventEmitter {
     if (this.shardMode && !this.secureMode) throw new Error('Shard mode requires secure mode!');
   }
 
+  /**
+   * Connects to the ArunaCore server
+   * @param {string?} [secureKey] Secure key for secure mode
+   * @returns {Promise<void>}
+   */
   public async connect(secureKey?: string): Promise<void> {
     if (secureKey) {
       this.secureKey = secureKey;
@@ -66,6 +93,17 @@ export class ArunaClient extends EventEmitter {
     });
   }
 
+  /**
+   * Sends a message to the ArunaCore server
+   * @param {string} command Command identifier of the message (100, 101, 102, etc...)
+   * @param {string[]} args Arguments of the message
+   * @param {string?} [to] Target of the message
+   * @param {string?} [targetKey] Target key of the message
+   * @param {string?} [type] Client type
+   * @returns {Promise<void>}
+   * @example
+   * client.send('100', ['Hello World!'], 'server', 'serverKey', 'client');
+   */
   public async send(command: string, args: string[], to?: string, targetKey?: string, type?: string): Promise<void> {
     return new Promise((resolve, reject) => {
       if (this.ws?.readyState !== ws.OPEN) return reject(new Error('Connection is not open!'));
@@ -87,6 +125,13 @@ export class ArunaClient extends EventEmitter {
     });
   }
 
+  /**
+   * Called when a message is received from the ArunaCore server
+   * Responsable for parsing the message and emitting the events
+   * @param {string} message Message received
+   * @returns {void}
+   * @private
+   */
   private onMessage(message: string): void {
     const parsedMessage = this.WSParser.parse(message);
 
@@ -120,11 +165,24 @@ export class ArunaClient extends EventEmitter {
     }
   }
 
+  /**
+   * Registers the client in the ArunaCore server
+   * @returns {void}
+   * @private
+   */
   private register(): void {
     if (this.isRegistered) return;
     this.send('000', ['register', '1.0.0-ALPHA.x', '1.0.0-ALPHA.x', process.env.npm_package_version ?? '']); // [register, minimunCoreVersion, maximumCoreVersion, currentApiVersion]
   }
 
+  /**
+   * Pings the ArunaCore server
+   * @returns {Promise<boolean>}
+   * @example
+   * client.ping().then(() => {
+   *  console.log('Pong!');
+   * });
+   */
   public async ping(): Promise<boolean> {
     return new Promise((resolve, reject) => {
       if (this.ws?.readyState !== ws.OPEN) return reject(new Error('Connection is not open!'));
@@ -139,14 +197,30 @@ export class ArunaClient extends EventEmitter {
     });
   }
 
+  /**
+   * Returns the message parser
+   * @returns {WebSocketParser}
+   */
   public getWSParser(): WebSocketParser {
     return this.WSParser;
   }
 
+  /**
+   * Returns the client id
+   * @returns {string}
+   */
   public getID(): string {
     return this.id;
   }
 
+  /**
+   * Closes the connection to the ArunaCore server
+   * @returns {Promise<void>}
+   * @example
+   * client.finish().then(() => {
+   *  console.log('Connection closed!');
+   * });
+   */
   public async finish(): Promise<void> {
     return new Promise(async (resolve) => {
       if (this.ws?.readyState !== ws.OPEN) return resolve();
@@ -166,17 +240,4 @@ export class ArunaClient extends EventEmitter {
       await this.send('000', ['unregister']);
     });
   }
-}
-
-export interface ArunaClient {
-  getWSParser(): WebSocketParser;
-  getID(): string;
-  ping(): Promise<boolean>;
-  finish(): Promise<void>;
-  on(event: 'ready', listener: () => void): this;
-  on(event: 'finish', listener: () => void): this;
-  on(event: 'error', listener: (err: Error) => void): this;
-  on(event: 'message', listener: (message: IMessage) => void): this;
-  on(event: 'close', listener: (code: number, reason: string) => void): this;
-  on(event: string, listener: (...args: any[]) => void): this;
 }

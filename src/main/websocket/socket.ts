@@ -67,8 +67,17 @@ export class Socket extends EventEmitter {
     connection.send(data);
   }
 
-  // This is used to prevent the re-use of the same code
-  public send(connection: wss.WebSocket, from: string, command: string, args: string[], to?: string, type?: string):void {
+  /**
+   * Sends a message to a client
+   * @param connection the websocket connection
+   * @param from id of the sender
+   * @param command the command
+   * @param args arguments of the command
+   * @param to optional id of the receiver
+   * @param type optional client type
+   * @deprecated Use connection.send() instead
+   */
+  public send(connection: wss.WebSocket, from: string, command: string, args: string[], to?: string, type?: string): void {
     try {
       const message = this.parser.formatToString(from, command, args, to, type); // Formats the message
       connection.send(message); // Sends the message

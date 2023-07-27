@@ -29,6 +29,8 @@
 
 - [CHORE] Update dependencies
 
+- [CHORE] Improve documentation
+
 - [CHORE] Create a changelog file to keep track of changes
   - Probably includes all changes from previous versions
 

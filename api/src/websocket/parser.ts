@@ -69,7 +69,7 @@ export class WebSocketParser {
    * @param args - The 'args' property of the message.
    * @param to - The optional 'to' property of the message.
    * @param type - The optional 'type' property of the message.
-   * @returns Message object.
+   * @returns {IMessage} Message object.
    */
   public format(from: string, command: string, args: string[], to?: string, type?: string): IMessage {
     return { from, type, command, to, args };
@@ -78,7 +78,7 @@ export class WebSocketParser {
   /**
    * Convert a WebSocket message object into a message string.
    * @param message - The message object to convert.
-   * @returns The WebSocket message string.
+   * @returns {string} The WebSocket message string.
    */
   public toString(message: IMessage): string {
     return `:${message.from}${message.type ? `-${message.type}` : ''} ${message.command} ${message.to ? message.to + ' ' : ''}:${message.args.join(' ')}`;
@@ -92,8 +92,8 @@ export class WebSocketParser {
    * @param to - The optional 'to' property of the message.
    * @param type - The optional 'type' property of the message.
    * @returns The WebSocket message string.
-   * @see WebSocketParser.format
-   * @see WebSocketParser.toString
+   * @see {@link WebSocketParser.format}
+   * @see {@link WebSocketParser.toString}
    */
   public formatToString(from: string, command: string, args: string[], to?: string, type?: string): string {
     return this.toString(this.format(from, command, args, to, type));
