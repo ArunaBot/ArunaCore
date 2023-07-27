@@ -11,10 +11,12 @@ export class ArunaClient extends EventEmitter {
   private shardMode: boolean;
   private secureKey: string | null = null;
   private ws: ws.WebSocket | null = null;
+  private isRegistered = false;
   private logger: Logger;
   private host: string;
   private port: number;
   private id: string;
+  private finishTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(options: IWebsocketOptions) {
     super();
@@ -93,9 +95,11 @@ export class ArunaClient extends EventEmitter {
     switch (parsedMessage.command) {
       case '000':
         if (parsedMessage.args[0] === 'register-success') {
+          this.isRegistered = true;
           this.logger.debug('Client Registered!');
           this.emit('ready');
         } else if (parsedMessage.args[0] === 'unregister-success') {
+          this.isRegistered = false;
           this.logger.debug('Client Unregistered!');
           this.emit('finish');
         } else {
@@ -117,6 +121,7 @@ export class ArunaClient extends EventEmitter {
   }
 
   private register(): void {
+    if (this.isRegistered) return;
     this.send('000', ['register', '1.0.0-ALPHA.x', '1.0.0-ALPHA.x', process.env.npm_package_version ?? '']); // [register, minimunCoreVersion, maximumCoreVersion, currentApiVersion]
   }
 
@@ -144,11 +149,21 @@ export class ArunaClient extends EventEmitter {
 
   public async finish(): Promise<void> {
     return new Promise(async (resolve) => {
-      await this.send('000', ['unregister']);
+      if (this.ws?.readyState !== ws.OPEN) return resolve();
 
-      await utils.sleep(3000);
-      this.ws?.close(1000);
-      return resolve();
+      this.once('finish', () => {
+        if (this.finishTimeout) {
+          clearTimeout(this.finishTimeout);
+          this.finishTimeout = null;
+        }
+        resolve();
+      });
+
+      this.finishTimeout = setTimeout(() => {
+        this.ws?.close(1000);
+        resolve();
+      }, 5000);
+      await this.send('000', ['unregister']);
     });
   }
 }
