@@ -68,10 +68,13 @@ async function run(): Promise<void> {
     return logger.fatal('No Tests found!');
   }
 
+  const isWin = process.platform === 'win32';
+
   for await (const file of jsfiles) {
     const pathUrl = new URL(`${scriptDir}/${file}`, import.meta.url).toString();
-    const fileUrl = url.pathToFileURL(pathUrl);
-    const eventFunction = await import(fileUrl.toString());
+    const fileUrl = url.pathToFileURL(pathUrl).toString();
+    const finalUrl = isWin ? fileUrl : pathUrl;
+    const eventFunction = await import(finalUrl);
     logger.info(`=> ${chalk.blueBright(eventFunction.name)}`);
     tests.push(eventFunction);
   }
