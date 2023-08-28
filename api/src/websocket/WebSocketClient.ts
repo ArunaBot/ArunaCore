@@ -214,6 +214,14 @@ export class ArunaClient extends EventEmitter {
   }
 
   /**
+   * Indicates if the client is registered in the ArunaCore server
+   * @returns {boolean}
+   */
+  public getIsRegistered(): boolean {
+    return this.isRegistered;
+  }
+
+  /**
    * Closes the connection to the ArunaCore server
    * @returns {Promise<void>}
    * @example
