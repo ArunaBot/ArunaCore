@@ -1,4 +1,4 @@
-import { createServer, Server, STATUS_CODES } from 'http';
+import { createServer, IncomingMessage, Server, ServerResponse, STATUS_CODES } from 'http';
 
 export class HTTPServer {
   private server: Server | null = null;
@@ -7,7 +7,7 @@ export class HTTPServer {
   private isListen = false;
 
   constructor(port?: number) {
-    this.registerRoute('/healthCheck', 'get', (_req: any, res: any) => {
+    this.registerRoute('/healthCheck', 'get', (_req: IncomingMessage, res: ServerResponse) => {
       res.write('OK');
       res.statusCode = 200;
       return res.end();
@@ -15,13 +15,13 @@ export class HTTPServer {
     if (port) this.listen(port);
   }
 
-  public registerRoute(route: string, method: string, callback: any): void {
+  public registerRoute(route: string, method: string, callback: (req: IncomingMessage, res: ServerResponse) => void): void {
     this.routes.push({ route, method: method.toLowerCase(), callback });
   }
 
-  private reqListener(req: any, res: any): any {
+  private reqListener(req: IncomingMessage, res: ServerResponse): any {
     const url = req.url;
-    const method = req.method;
+    const method = req.method!;
 
     const routeFounded = this.routes.find((route) => route.route === url && route.method === method.toLowerCase());
 
@@ -41,7 +41,7 @@ export class HTTPServer {
   public enableUpgradeRequired(path = '/'): void {
     if (this.isListen || this.isUpgradeRequired) return;
     this.isUpgradeRequired = true;
-    this.registerRoute(path, 'get', (req: any, res: any) => {
+    this.registerRoute(path, 'get', (_req: IncomingMessage, res: ServerResponse) => {
       const body = STATUS_CODES[426];
 
       if (!body) {
