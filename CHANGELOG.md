@@ -33,6 +33,15 @@
 - [FIX] Timeouts not being cleared
   - This also reduces test time
 
+- [FIX] HTTP server not responding unknown endpoints
+  - Now it returns a `404` error _(as expected)_ instead just doing nothing and waiting for a timeout
+
+- [FIX] HTTP doesn't support body
+  - Since the default node http server doesn't support body, we've implemented a custom parser to support it
+
+- [FIX] HTTP server routes begin case sensitive
+  - Now all routes are case insensitive
+
 - [CHORE] Update dependencies
 
 - [CHORE] Improve documentation

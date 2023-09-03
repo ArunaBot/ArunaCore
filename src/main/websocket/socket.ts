@@ -21,7 +21,7 @@ export class Socket extends EventEmitter {
 
   constructor(port: number, logger: Logger, options?: ISocketOptions) {
     super();
-    this.httpServer = new HTTPServer();
+    this.httpServer = new HTTPServer(logger);
     this.httpServer.enableUpgradeRequired();
     this.httpServer.listen(port);
     this.logger = logger;

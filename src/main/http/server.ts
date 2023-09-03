@@ -1,13 +1,25 @@
 import { createServer, IncomingMessage, Server, ServerResponse, STATUS_CODES } from 'http';
+import { Logger } from '@promisepending/logger.js';
+import { ExtendedRequest } from './structures';
+import { EHTTPMethod } from '../enums';
+import querystring from 'querystring';
 
 export class HTTPServer {
   private server: Server | null = null;
   private isUpgradeRequired = false;
-  private routes: any[] = [];
   private isListen = false;
+  private routes: {
+    route: string;
+    method: string;
+    callback: (req: ExtendedRequest, res: ServerResponse) => void;
+  }[] = [];
 
-  constructor(port?: number) {
-    this.registerRoute('/healthCheck', 'get', (_req: IncomingMessage, res: ServerResponse) => {
+  private logger: Logger;
+
+  constructor(logger: Logger, port?: number) {
+    if (!logger) throw new Error('Logger is required');
+    this.logger = logger;
+    this.registerRoute('/healthcheck', EHTTPMethod.GET, (_req: ExtendedRequest, res: ServerResponse) => {
       res.write('OK');
       res.statusCode = 200;
       return res.end();
@@ -15,18 +27,67 @@ export class HTTPServer {
     if (port) this.listen(port);
   }
 
-  public registerRoute(route: string, method: string, callback: (req: IncomingMessage, res: ServerResponse) => void): void {
-    this.routes.push({ route, method: method.toLowerCase(), callback });
+  public registerRoute(route: string, method: EHTTPMethod, callback: (req: ExtendedRequest, res: ServerResponse) => void): void {
+    this.routes.push({ route: route.toLowerCase(), method: method.toLowerCase(), callback });
   }
 
-  private reqListener(req: IncomingMessage, res: ServerResponse): any {
+  private async reqListener(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const url = req.url;
     const method = req.method!;
 
-    const routeFounded = this.routes.find((route) => route.route === url && route.method === method.toLowerCase());
+    const extendedReq = Object.assign(req, { params: {}, body: {} }) as ExtendedRequest;
+
+    const routeFounded = this.routes.find((route) => {
+      const routeSplitted = route.route.split('/');
+      const urlSplitted = url!.toLowerCase().split('/');
+      if (routeSplitted.length !== urlSplitted.length) return false;
+      for (let i = 0; i < routeSplitted.length; i++) {
+        if (routeSplitted[i] !== urlSplitted[i] && !routeSplitted[i].startsWith(':')) return false;
+        if (routeSplitted[i].startsWith(':')) extendedReq.params[routeSplitted[i].slice(1)] = urlSplitted[i];
+      }
+      return route.method === method.toLowerCase();
+    });
 
     if (routeFounded) {
-      return routeFounded.callback(req, res);
+      // Handle body if method isn't GET or DELETE and only run the callback after the body is fully received
+      if (method !== EHTTPMethod.GET && method !== EHTTPMethod.DELETE) {
+        let body = '';
+        try {
+          await new Promise<void>((resolve, reject) => {
+            req.on('data', (chunk) => {
+              body += chunk.toString();
+              if (body.length > 1e6) {
+                req.socket.destroy();
+                reject(new Error('Body too large'));
+              }
+            });
+            req.on('end', () => {
+              const contentType = req.headers['content-type'];
+              if (contentType === 'application/json') {
+                try {
+                  extendedReq.body = JSON.parse(body);
+                } catch (e) {
+                  reject(e);
+                }
+              } else if (contentType === 'application/x-www-form-urlencoded') {
+                extendedReq.body = querystring.parse(body);
+              }
+
+              resolve();
+            });
+          });
+          return routeFounded.callback(extendedReq, res);
+        } catch (error) {
+          res.statusCode = 500;
+          res.end('Internal server error');
+          console.error(`An error occurred while parsing request's: ${body}`, error);
+        }
+      } else {
+        return routeFounded.callback(extendedReq, res);
+      }
+    } else {
+      res.statusCode = 404;
+      res.end('Not found');
     }
   }
 
@@ -41,7 +102,7 @@ export class HTTPServer {
   public enableUpgradeRequired(path = '/'): void {
     if (this.isListen || this.isUpgradeRequired) return;
     this.isUpgradeRequired = true;
-    this.registerRoute(path, 'get', (_req: IncomingMessage, res: ServerResponse) => {
+    this.registerRoute(path, EHTTPMethod.GET, (_req: ExtendedRequest, res: ServerResponse) => {
       const body = STATUS_CODES[426];
 
       if (!body) {
