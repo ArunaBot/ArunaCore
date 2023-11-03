@@ -1,10 +1,14 @@
 import { IMessage } from '../interfaces';
 
+/**
+ * WebSocket message parser.
+ */
 export class WebSocketParser {
   /**
    * Parse a WebSocket message string and extract its components.
    * @param message - The WebSocket message string to parse.
    * @returns The parsed message object or null if the message is invalid.
+   * @deprecated This method is deprecated and will be removed in the future.
    */
   public parse(message: string): IMessage|null {
     try {
@@ -53,7 +57,7 @@ export class WebSocketParser {
           }
         }
 
-        return { from, type, command, to, secureKey, targetKey, args };
+        return { from: { id: from, key: secureKey }, type, command, target: { id: to!, key: targetKey }, args, content: 'LEGACY_MESSAGE' };
       }
 
       return null;
@@ -63,39 +67,52 @@ export class WebSocketParser {
   }
 
   /**
-   * Create the message object by the given properties.
-   * @param from - The 'from' property of the message.
-   * @param command - The 'command' property of the message.
-   * @param args - The 'args' property of the message.
-   * @param to - The optional 'to' property of the message.
-   * @param type - The optional 'type' property of the message.
-   * @returns {IMessage} Message object.
-   */
-  public format(from: string, command: string, args: string[], to?: string, type?: string): IMessage {
-    return { from, type, command, to, args };
-  }
-
-  /**
    * Convert a WebSocket message object into a message string.
    * @param message - The message object to convert.
    * @returns {string} The WebSocket message string.
+   * @deprecated This method is deprecated and will be removed in the future.
    */
   public toString(message: IMessage): string {
-    return `:${message.from}${message.type ? `-${message.type}` : ''} ${message.command} ${message.to ? message.to + ' ' : ''}:${message.args.join(' ')}`;
+    return `:${message.from}${message.type ? `-${message.type}` : ''} ${message.command} ${message.target?.id ? message.target.id + ' ' : ''}:${message.args?.join(' ')}`;
+  }
+
+  /**
+   * Create the message object by the given properties.
+   *
+   * @param from - The 'from' property of the message.
+   * @param content - The 'content' property of the message.
+   * @param type - The optional 'type' property of the message.
+   * @param command - The optional 'command' property of the message.
+   * @param target - The optional 'target' property of the message.
+   * @param args - The optional 'args' property of the message.
+   * @returns {IMessage} Message object.
+   */
+  public static format(from: { id: string, key?: string }, content: any, { type, command, target, args }: { type?: string, command?: string, target?: { id: string, key?: string }, args?: string[] }): IMessage {
+    const finalJSON: IMessage = {
+      from,
+      content,
+    };
+
+    if (command) Object.assign(finalJSON, { command });
+    if (target) Object.assign(finalJSON, { target });
+    if (args) Object.assign(finalJSON, { args });
+    if (type) Object.assign(finalJSON, { type });
+
+    return finalJSON;
   }
 
   /**
    * Format and convert a WebSocket message object into a message string.
+   *
    * @param from - The 'from' property of the message.
-   * @param command - The 'command' property of the message.
-   * @param args - The 'args' property of the message.
-   * @param to - The optional 'to' property of the message.
+   * @param content - The 'content' property of the message.
    * @param type - The optional 'type' property of the message.
+   * @param command - The optional 'command' property of the message.
+   * @param target - The optional 'target' property of the message.
+   * @param args - The optional 'args' property of the message.
    * @returns The WebSocket message string.
-   * @see {@link WebSocketParser.format}
-   * @see {@link WebSocketParser.toString}
    */
-  public formatToString(from: string, command: string, args: string[], to?: string, type?: string): string {
-    return this.toString(this.format(from, command, args, to, type));
+  public static formatToString(from: { id: string, key?: string }, content: any, { type, command, target, args }: { type?: string, command?: string, target?: { id: string, key?: string }, args?: string[] }): string {
+    return JSON.stringify(this.format(from, content, { type, command, target, args }));
   }
 }

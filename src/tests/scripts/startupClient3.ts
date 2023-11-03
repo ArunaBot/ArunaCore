@@ -3,12 +3,12 @@ import { IMessage, ArunaClient } from '../../../api/src';
 
 function runStartupClient3({ loggerClient, index }: ITestOptions): Promise<ITestResponse> {
   return new Promise((resolve, reject) => {
-    const client = new ArunaClient({ host: 'localhost', port: 3000, id: 'client3-debug', logger: loggerClient });
+    const client = new ArunaClient({ host: 'localhost', port: 3000, id: 'client3', logger: loggerClient });
 
     client.connect('test3');
 
     client.on('message', (message: IMessage) => {
-      loggerClient.info('3' + client.getWSParser().toString(message));
+      loggerClient.info('[3]: ', message);
     });
 
     client.on('ready', () => {

@@ -2,7 +2,6 @@ import { ITestOptions } from '../interfaces';
 
 async function sendMessage2Test({ loggerClient, client, client3 }: ITestOptions): Promise<void> {
   return new Promise(async (resolve, reject) => {
-    await client3.send('999', ['test2'], 'client');
     const timeout = setTimeout(() => {
       loggerClient.error('Message 2 Timeout');
       return reject(new Error('Message 2 Timeout'));
@@ -12,6 +11,7 @@ async function sendMessage2Test({ loggerClient, client, client3 }: ITestOptions)
       clearTimeout(timeout);
       return resolve();
     });
+    await client3.send('test2', { command: '999', target: { id: 'client' } });
   });
 }
 

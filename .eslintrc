@@ -12,6 +12,7 @@
     "capIsNew": ["off"],
     "comma-dangle": ["error", "always-multiline"],
     "computed-property-spacing": "warn",
+    "deprecation/deprecation": "warn",
     "default-case": ["error", { "commentPattern": "^no default$" }],
     "eol-last": ["error", "always"],
     "indent": ["warn", 2, {"SwitchCase": 1}],
@@ -26,7 +27,7 @@
     "max-len": [
       "warn",
       {
-        "code": 190,
+        "code": 250,
         "ignoreComments": true,
         "ignoreUrls": true
       }
@@ -89,8 +90,9 @@
   "globals": {},
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "ecmaVersion": 2020,
-    "sourceType": "module"
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "project": "./tsconfig.json" // <-- Point to your project's "tsconfig.json" or create a new one.
   },
-  "plugins": ["prettier", "@typescript-eslint"]
+  "plugins": ["deprecation", "@typescript-eslint"]
 }

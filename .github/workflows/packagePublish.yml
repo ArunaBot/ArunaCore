@@ -18,12 +18,12 @@ jobs:
       - name: Setup .npmrc (NPM)
         uses: actions/setup-node@v3
         with:
-          node-version: '16.x'
+          node-version: '20.x'
           registry-url: 'https://registry.npmjs.org'
           scope: '@arunabot'
 
-      - name: Enforce npm 8
-        run: npm install -g npm@8.x
+      - name: Update npm
+        run: npm install -g npm@latest
 
       - name: Get Current version
         id: current_version

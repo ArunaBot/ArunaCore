@@ -1,23 +1,24 @@
 /* eslint-disable @typescript-eslint/no-unsafe-declaration-merging */
 import { ConnectionManager, MessageHandler } from './managers';
-import { IMessage, WebSocketParser } from '../../../api/src';
 import { Logger } from '@promisepending/logger.js';
 import { ISocketOptions } from '../interfaces';
+import { IMessage } from '../../../api/src';
 import { EventEmitter } from 'events';
 import { autoLogEnd } from '../utils';
 import { HTTPServer } from '../http';
-import * as wss from 'ws';
+import WebSocket from 'ws';
+
+const { WebSocketServer } = WebSocket;
 
 export class Socket extends EventEmitter {
-  private ws: wss.WebSocketServer;
-  private logger: Logger;
-  private isAutoLogEndEnable: boolean;
-  private requireAuth: boolean;
-  private parser = new WebSocketParser();
-  private httpServer: HTTPServer;
-  private masterKey: string | null;
   private connectionManager: ConnectionManager;
   private messageHandler: MessageHandler;
+  private isAutoLogEndEnable: boolean;
+  private masterKey: string | null;
+  private httpServer: HTTPServer;
+  private requireAuth: boolean;
+  private ws: WebSocket.Server;
+  private logger: Logger;
 
   constructor(port: number, logger: Logger, options?: ISocketOptions) {
     super();
@@ -25,8 +26,9 @@ export class Socket extends EventEmitter {
     this.httpServer.enableUpgradeRequired();
     this.httpServer.listen(port);
     this.logger = logger;
-    this.ws = new wss.WebSocketServer({
+    this.ws = new WebSocketServer({
       server: this.httpServer.getServer()!,
+      maxPayload: 512 * 1024,
       perMessageDeflate: {
         zlibDeflateOptions: {
           chunkSize: (4 * 1024),
@@ -62,7 +64,7 @@ export class Socket extends EventEmitter {
     this.emit('ready');
   }
 
-  private rawSend (connection: wss.WebSocket, data: any):void {
+  private rawSend (connection: WebSocket, data: any):void {
     connection.send(data);
   }
 
@@ -76,10 +78,9 @@ export class Socket extends EventEmitter {
    * @param type optional client type
    * @deprecated Use connection.send() instead
    */
-  public send(connection: wss.WebSocket, from: string, command: string, args: string[], to?: string, type?: string): void {
+  public send(connection: WebSocket, message: IMessage): void {
     try {
-      const message = this.parser.formatToString(from, command, args, to, type); // Formats the message
-      connection.send(message); // Sends the message
+      connection.send(JSON.stringify(message));
     } catch (e) {
       this.logger.warn('An error occurred while trying to send a message to a client:', e);
       this.logger.warn('The above error probably occurred because of lack of data or invalid data');
@@ -107,10 +108,6 @@ export class Socket extends EventEmitter {
     return this.masterKey;
   }
 
-  public getWSParser(): WebSocketParser {
-    return this.parser;
-  }
-
   public getLogger(): Logger {
     return this.logger;
   }
@@ -129,10 +126,9 @@ export class Socket extends EventEmitter {
 }
 
 export interface Socket {
-  getWSParser(): WebSocketParser;
   getLogger(): Logger;
   finishWebSocket(): Promise<void>;
-  send(connection: wss.WebSocket, from: string, command: string, args: string[], to?: string, type?: string): void;
+  send(connection: WebSocket, message: IMessage): void;
   on(event: 'message', listener: (message: IMessage) => void): this;
   on(event: 'ready', listener: () => void): this;
 }

@@ -2,7 +2,6 @@ import * as WS from 'ws';
 
 export interface IConnection {
   id: string,
-  type?: string,
   isAlive: boolean,
   isSecure: boolean,
   secureKey?: string,

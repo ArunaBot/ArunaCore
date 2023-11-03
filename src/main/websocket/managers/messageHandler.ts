@@ -1,4 +1,4 @@
-import { IMessage, WebSocketParser } from 'arunacore-api';
+import { IMessage, WebSocketParser } from '../../../../api/src';
 import { ConnectionManager } from './connectionManager';
 import { ConnectionStructure } from '../structures';
 import { Socket } from '../socket';
@@ -6,69 +6,78 @@ import * as wss from 'ws';
 
 export class MessageHandler {
   private connectionManager: ConnectionManager;
-  private parser: WebSocketParser;
   private masterKey: string|null;
   private socket: Socket;
 
   constructor(mainSocket: Socket) {
     this.socket = mainSocket;
-    this.parser = mainSocket.getWSParser();
     this.masterKey = mainSocket.getMasterKey();
     this.connectionManager = mainSocket.getConnectionManager();
 
     mainSocket.getLogger().info('Message handler initialized!');
   }
 
-  public async onMessage(message: wss.MessageEvent, connection: wss.WebSocket): Promise<void> {
-    const data: IMessage|null = this.parser.parse(message.data.toString());
+  public async onMessage(data: wss.MessageEvent, connection: wss.WebSocket): Promise<void> {
+    var message: IMessage | null = null;
+    try {
+      message = JSON.parse(data.data.toString());
+    } catch (e) {
+      message = null;
+    }
 
-    if (data == null) return;
+    if (message == null) return;
 
-    const connectionFounded = this.connectionManager.getConnection(data.from);
+    const fromConnection = this.connectionManager.getConnection(message.from.id);
 
-    if (!connectionFounded || data.args[0] === 'register') {
-      this.connectionManager.registerConnection(message.target, data);
+    if (!fromConnection && message.type === 'register') {
+      this.connectionManager.registerConnection(connection, message);
       return;
     }
 
-    if (connectionFounded && connectionFounded.getIsSecure()) {
-      if (connectionFounded.getSecureKey() !== data.secureKey) {
-        connection.close(1000, this.parser.formatToString('arunacore', '401', ['unauthorized'], data.from));
+    if (!fromConnection) {
+      connection.send(WebSocketParser.formatToString({ id: 'arunacore' }, 'unprocessable-entity', { command: '422', target: { id: message.from.id }, type: 'register' }));
+      return;
+    }
+
+    if (fromConnection.getIsSecure()) {
+      if (fromConnection.getSecureKey() !== message.from.key) {
+        connection.close(1000, WebSocketParser.formatToString({ id: 'arunacore' }, 'unauthorized', { command: '401', target: { id: message.from.id }, type: 'disconnect' }));
         return;
       }
     }
 
-    if (connectionFounded && data.args[0] === 'unregister') {
-      this.connectionManager.unregisterConnection(connectionFounded);
+    if (message.type === 'unregister') {
+      this.connectionManager.unregisterConnection(fromConnection);
       return;
     }
 
-    if (await this.defaultCommandExecutor(connectionFounded, data)) return;
+    if (await this.defaultCommandExecutor(fromConnection, message)) return;
 
-    const toConnectionsFounded = this.connectionManager.getConnection(data.to!);
+    const targetConnection = message.target?.id ? this.connectionManager.getConnection(message.target.id) : null;
 
-    if (!toConnectionsFounded) {
-      this.socket.send(message.target, 'arunacore', '404', ['target', 'not-found'], data.from); // Message example: :arunacore 404 :target not-found [from-id]
+    if (!targetConnection) {
+      connection.send(WebSocketParser.formatToString({ id: 'arunacore' }, 'target-not-found', { command: '404', target: { id: message.from.id }, args: [message.target?.id ?? ''] }));
       return;
     }
 
     // ping the sender to check if it's alive
-    if (!await this.connectionManager.ping(toConnectionsFounded)) {
-      this.socket.send(message.target, 'arunacore', '404', ['target', 'not-found'], data.from);
+    if (!await this.connectionManager.ping(targetConnection)) {
+      connection.send(WebSocketParser.formatToString({ id: 'arunacore' }, 'target-not-found', { command: '404', target: { id: message.from.id }, args: [message.target?.id ?? ''] }));
       return;
     }
 
-    if (toConnectionsFounded.getIsSecure() && toConnectionsFounded.getSecureKey() !== data.targetKey) {
-      this.socket.send(message.target, 'arunacore', '401', ['unauthorized'], data.from);
+    if (targetConnection.getIsSecure() && targetConnection.getSecureKey() !== message.target?.key) {
+      connection.send(WebSocketParser.formatToString({ id: 'arunacore' }, 'unauthorized', { command: '401', target: { id: message.from.id } }));
       return;
     }
 
-    this.socket.emit('message', data);
+    this.socket.emit('message', message);
 
-    if (data.secureKey) delete data.secureKey;
-    if (data.targetKey) delete data.targetKey;
+    if (message.from.key) delete message.from.key;
+    if (message.target?.key) delete message.target.key;
+    if (message.coreKey) delete message.coreKey;
 
-    toConnectionsFounded.send(data);
+    targetConnection.send(message);
   }
 
   /**
@@ -86,15 +95,15 @@ export class MessageHandler {
       // Get the list of all current connections alive ids
       case '015':
         if (!this.masterKey) {
-          connection.send(this.parser.format('arunacore', '503', ['service', 'unavaliable'], message.from));
+          connection.send(WebSocketParser.formatToString({ id: 'arunacore' }, 'service-unavaliable', { command: '503', target: { id: message.from.id }, type: 'unavaliable' }));
           break;
         }
-        if ((message.args.length !== 1) || (this.masterKey !== message.args[0])) {
-          connection.send(this.parser.format('arunacore', '401', ['unauthorized'], message.from));
+        if (this.masterKey !== message.coreKey) {
+          connection.send(WebSocketParser.formatToString({ id: 'arunacore' }, 'unauthorized', { command: '401', target: { id: message.from.id } }));
           break;
         }
         var ids: string[] = Array.from(this.connectionManager.getAliveConnections().keys());
-        connection.send(this.parser.format('arunacore', '015', ids, message.from));
+        connection.send(WebSocketParser.formatToString({ id: 'arunacore' }, ids, { command: '015', target: { id: message.from.id } }));
         break;
       case '000':
         break;
@@ -104,7 +113,23 @@ export class MessageHandler {
     }
 
     // Prevents leaking of the master key
-    if (!message.to || (this.masterKey && message.args.includes(this.masterKey))) isInternal = true;
+    if (
+      !message.target?.id ||
+      (
+        this.masterKey &&
+        (
+          message.coreKey ||
+          (
+            (
+              typeof message.content === 'string' ||
+              typeof message.content === typeof Array
+            ) &&
+            message.content.includes(this.masterKey)
+          ) ||
+          message.args?.includes(this.masterKey)
+        )
+      )
+    ) isInternal = true;
     // Reserves the commands from 000 to 099 for internal use
     else if (!(isNaN(Number(command))) && (Number(command) >= 0 && Number(command) <= 99)) isInternal = true;
 

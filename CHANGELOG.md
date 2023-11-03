@@ -1,11 +1,22 @@
 # v1.0.0-ALPHA.4
 
-- [BREAKING] Drop support for all versions below Node.js v16.0.0
+- [BREAKING] Drop support for all versions below Node.js v16
   - Our build system was improved and can't build in version 14 or lower anymore, but may work if you use a pre-built version
   - Some dependencies dropped support for version 16 or lower, so we had to drop support too
 
-- [BREAKING] ArunaCore is now a ES module
+- [BREAKING] Message system was refactored
+  - Instead of a crazy irc-inspired message system, we now use simple json objects
+  - The send method was changed, and you will need to update your code to use the new one
+  - Legacy "command" and "args" properties are now optional, and you probably won't need to use them anymore
+  - New parameter "content" was added, this accepts anything and will be sent as the message content
+  - The property "type" in message doesn't mean the client type anymore, now it means the message type (update your code to reflect this change)
+  - Various other changes were made, so check IMessage interface to see all changes
+
+- [BREAKING] ArunaCore is now an ES module
   - This doesn't affect the api, so your code probably will work without issues
+
+- [DEPRECATED] Various methods from `WebSocketParser` were deprecated
+  - They will be removed in the next major version (alpha -> beta)
 
 - [CHANGE] We changed the project structure
   - Say goodbye to multiples `node_modules` folders (we now use a single in the root and another in api only)
@@ -15,6 +26,9 @@
 - [CHANGE] Build system was improved
   - Since we have abandoned the multiple modules structure, we can now use a single build system
   - This includes the api (you don't need to build it separately anymore)
+
+- [CHANGE] Increase WebSocket payload size limit
+  - Now we support payloads up to 512kb
 
 - [NEW] Add configuration system
   - Now you can configure the system (including server port) editing the  `bundle/config/config.json` file
@@ -26,9 +40,6 @@
 
 - [NEW] Create a connection structure
   - Usefull to store and manipulate connections
-
-- [FIX] Critical issue in the websocket message parser
-  - If the client type was defined, the parser mistakenly considered the type as the client's ID and vice versa.
 
 - [FIX] Timeouts not being cleared
   - This also reduces test time
@@ -80,7 +91,7 @@
 
 - [FIXED] Some type errors
 
-- [NEW] Some improvements to the log system
+- [NEW] Some improvements in the log system
 
 - [NEW] Create AutoLogEnd to prevent unexpected ends
 

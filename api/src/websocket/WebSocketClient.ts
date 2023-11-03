@@ -1,5 +1,5 @@
 import { Logger } from '@promisepending/logger.js';
-import { IWebsocketOptions } from '../interfaces';
+import { IMessage, IWebsocketOptions } from '../interfaces';
 import { WebSocketParser, utils } from '../';
 import { EventEmitter } from 'events';
 import ws from 'ws';
@@ -28,7 +28,6 @@ import ws from 'ws';
  * client.connect(); // optional: secureKey
  */
 export class ArunaClient extends EventEmitter {
-  private WSParser: WebSocketParser;
   private secureMode: boolean;
   private shardMode: boolean;
   private secureKey: string | null = null;
@@ -45,7 +44,6 @@ export class ArunaClient extends EventEmitter {
     this.id = options.id ?? 'client';
     this.host = options.host ?? 'localhost';
     this.port = options.port ?? 3000;
-    this.WSParser = new WebSocketParser();
     this.logger = options.logger ?? new Logger({ prefix: 'WSClient' });
 
     this.secureMode = options.secureMode ?? false;
@@ -104,21 +102,22 @@ export class ArunaClient extends EventEmitter {
    * @example
    * client.send('100', ['Hello World!'], 'server', 'serverKey', 'client');
    */
-  public async send(command: string, args: string[], to?: string, targetKey?: string, type?: string): Promise<void> {
+  public async send(content: any, { type, command, target, args }: { type?: string, command?: string, target?: { id: string, key?: string }, args?: string[] }): Promise<void> {
     return new Promise((resolve, reject) => {
       if (this.ws?.readyState !== ws.OPEN) return reject(new Error('Connection is not open!'));
+
+      const finalFrom: { id: string, key?: string } = {
+        id: this.id,
+      };
+
       if (this.secureMode && this.secureKey == null) return reject(new Error('Secure key is required for secure mode!'));
-      if (this.secureMode) {
-        args.splice(0, 0, 'key:' + this.secureKey);
-        if (targetKey && targetKey !== '' && targetKey !== this.secureKey) args.splice(1, 0, 'targetKey:' + targetKey);
-      }
-      const message = this.WSParser.format(this.id, command, args, to, type);
-      this.ws.send(this.WSParser.toString(message), (err) => {
+      else if (this.secureKey) Object.assign(finalFrom, { key: this.secureKey });
+
+      this.ws.send(WebSocketParser.formatToString(finalFrom, content, { type, command, target, args }), (err) => {
         if (err) {
           this.logger.error(err);
           reject(err);
         } else {
-          this.logger.debug(`Sent message: ${this.WSParser.toString(message)}`);
           resolve();
         }
       });
@@ -133,17 +132,22 @@ export class ArunaClient extends EventEmitter {
    * @private
    */
   private onMessage(message: string): void {
-    const parsedMessage = this.WSParser.parse(message);
+    var parsedMessage: IMessage | null = null;
+    try {
+      parsedMessage = JSON.parse(message);
+    } catch {
+      parsedMessage = null;
+    }
 
-    if (parsedMessage == null) return;
+    if (!parsedMessage) return;
 
     switch (parsedMessage.command) {
       case '000':
-        if (parsedMessage.args[0] === 'register-success') {
+        if (parsedMessage.content === 'register-success') {
           this.isRegistered = true;
           this.logger.debug('Client Registered!');
           this.emit('ready');
-        } else if (parsedMessage.args[0] === 'unregister-success') {
+        } else if (parsedMessage.content === 'unregister-success') {
           this.isRegistered = false;
           this.logger.debug('Client Unregistered!');
           this.emit('finish');
@@ -155,12 +159,13 @@ export class ArunaClient extends EventEmitter {
         this.emit('unauthorized', parsedMessage);
         break;
       case '403':
+        if (parsedMessage.type !== 'register') return;
         this.id = this.id + utils.randomString(5);
         this.register();
         break;
       default:
         this.emit('message', parsedMessage);
-        this.emit(parsedMessage.command, parsedMessage);
+        if (parsedMessage.command) this.emit(parsedMessage.command, parsedMessage);
         break;
     }
   }
@@ -172,7 +177,7 @@ export class ArunaClient extends EventEmitter {
    */
   private register(): void {
     if (this.isRegistered) return;
-    this.send('000', ['register', '1.0.0-ALPHA.x', '1.0.0-ALPHA.x', process.env.npm_package_version ?? '']); // [register, minimunCoreVersion, maximumCoreVersion, currentApiVersion]
+    this.send('request-register', { command: '000', type: 'register' });
   }
 
   /**
@@ -195,14 +200,6 @@ export class ArunaClient extends EventEmitter {
         }
       });
     });
-  }
-
-  /**
-   * Returns the message parser
-   * @returns {WebSocketParser}
-   */
-  public getWSParser(): WebSocketParser {
-    return this.WSParser;
   }
 
   /**
@@ -245,7 +242,7 @@ export class ArunaClient extends EventEmitter {
         this.ws?.close(1000);
         resolve();
       }, 5000);
-      await this.send('000', ['unregister']);
+      await this.send('request-unregister', { command: '000', type: 'unregister' });
     });
   }
 }

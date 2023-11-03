@@ -1,11 +1,10 @@
-import { IMessage, WebSocketParser } from '../../../../api/src';
 import { Logger } from '@promisepending/logger.js';
+import { IMessage } from '../../../../api/src';
 import { IConnection } from '../../interfaces';
 import * as WS from 'ws';
 
 export class ConnectionStructure {
   private id: string;
-  private type: string | null;
   private isAlive: boolean;
   private isSecure: boolean;
   private secureKey: string | null;
@@ -14,13 +13,11 @@ export class ConnectionStructure {
   private shardRootID: string | null;
   private apiVersion: string;
   private connection: WS.WebSocket;
-  private parser: WebSocketParser;
   private logger: Logger;
   private pingTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(info: IConnection, logger: Logger, parser: WebSocketParser) {
+  constructor(info: IConnection, logger: Logger) {
     this.id = info.id;
-    this.type = info.type ?? null;
     this.isAlive = info.isAlive;
     this.isSecure = info.isSecure;
     this.secureKey = info.secureKey ?? null;
@@ -30,7 +27,6 @@ export class ConnectionStructure {
     this.apiVersion = info.apiVersion;
     this.connection = info.connection;
     this.logger = logger;
-    this.parser = parser;
 
     // When the client responds to the ping in time (within the timeout), we state that the client is alive else we close the connection
     this.connection.on('pong', (): void => {
@@ -42,9 +38,9 @@ export class ConnectionStructure {
     });
   }
 
-  public send(message: IMessage): void {
+  public send(message: IMessage | string): void {
     try {
-      this.connection.send(this.parser.toString(message)); // Sends the message
+      this.connection.send(typeof message === 'string' ? message : JSON.stringify(message));
     } catch (e) {
       this.logger.warn('An error occurred while trying to send a message to a client:', e);
     }
@@ -82,10 +78,6 @@ export class ConnectionStructure {
 
   public getID(): string {
     return this.id;
-  }
-
-  public getType(): string | null {
-    return this.type;
   }
 
   public setIsAlive(isAlive: boolean): void {

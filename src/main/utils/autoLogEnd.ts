@@ -5,7 +5,7 @@ var exited = false;
 
 var wsSocket: Socket;
 
-const logger: Logger = new Logger({ prefix: 'CORE' });
+const logger: Logger = new Logger({ prefix: 'arunacore' });
 function exitHandler(options: any, exitCode: string | number): void {
   if (!exited) {
     process.stdin.resume();

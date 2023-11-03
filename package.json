@@ -7,14 +7,14 @@
 	"scripts": {
 		"preinstall": "cd api && npm install",
 		"preci": "cd api && npm ci",
-		"start": "node --experimental-specifier-resolution=node build/nodejs/src/main/start.js",
+		"start": "node --loader=./build/nodejs/src/main/loader.js build/nodejs/src/main/start.js",
 		"eslint:fix": "eslint ./src --fix && eslint ./api/src --fix",
 		"build": "npx tsc --build",
 		"postbuild": "node src/scripts/updateResources.cjs",
 		"predist": "npm run build",
 		"dist": "node src/scripts/dist.cjs",
 		"pretest": "npm run build",
-		"test": "node --experimental-specifier-resolution=node build/nodejs/src/tests/test.js"
+		"test": "node --loader=./build/nodejs/src/main/loader.js build/nodejs/src/tests/test.js"
 	},
 	"repository": {
 		"type": "git",
@@ -32,25 +32,24 @@
 	"dependencies": {
 		"@promisepending/logger.js": "^1.1.1",
 		"semver": "^7.5.4",
-		"ws": "^8.13.0"
+		"ws": "^8.14.2"
 	},
 	"devDependencies": {
-		"@types/module-alias": "^2.0.1",
-		"@types/node": "^20.4.5",
-		"@types/semver": "^7.5.0",
-		"@types/ws": "^8.5.5",
-		"@typescript-eslint/eslint-plugin": "^6.2.0",
-		"@typescript-eslint/parser": "^6.2.0",
+		"@types/module-alias": "^2.0.3",
+		"@types/node": "^20.8.10",
+		"@types/resolve": "^1.20.4",
+		"@types/semver": "^7.5.4",
+		"@types/ws": "^8.5.8",
+		"@typescript-eslint/eslint-plugin": "^6.9.1",
+		"@typescript-eslint/parser": "^6.9.1",
 		"@zerollup/ts-transform-paths": "^1.7.18",
-		"archiver": "^5.3.1",
-		"eslint": "^8.45.0",
-		"eslint-config-prettier": "^8.8.0",
+		"archiver": "^6.0.1",
+		"eslint": "^8.52.0",
 		"eslint-config-standard": "^17.1.0",
-		"eslint-plugin-import": "^2.27.5",
+		"eslint-plugin-deprecation": "^2.0.0",
+		"eslint-plugin-import": "^2.29.0",
 		"eslint-plugin-node": "^11.1.0",
-		"eslint-plugin-prettier": "^5.0.0",
 		"eslint-plugin-promise": "^6.0.0",
-		"prettier": "^3.0.0",
-		"typescript": "^5.1.6"
+		"typescript": "^5.2.2"
 	}
 }

@@ -6,7 +6,7 @@ function runStatupServer({ loggerServer, index }: ITestOptions): Promise<ITestRe
     const server = new Socket(3000, loggerServer);
 
     server.on('message', (message) => {
-      loggerServer.info(server.getWSParser().toString(message));
+      loggerServer.info(message);
     });
 
     return resolve({ server, testID: index });
