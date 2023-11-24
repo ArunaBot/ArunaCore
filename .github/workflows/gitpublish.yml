@@ -75,7 +75,7 @@ jobs:
       - name: Create GitHub release
         uses: Roang-zero1/github-create-release-action@master
         with:
-          prerelease_regex: ^v[0-9]\.[0-9]\.[0-9]\-
+          prerelease_regex: ^v[0-9]\.[0-9]\.[0-9]\-ALPHA\.[0-9]+$
           created_tag: v${{ steps.set_var.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
