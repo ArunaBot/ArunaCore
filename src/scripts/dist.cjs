@@ -24,30 +24,31 @@ function zipDirectory(sourceDir, outPath) {
   });
 }
 
+const distPath = path.resolve(__dirname, '..', '..', 'dist');
+const rootPath = path.resolve(distPath, 'root');
+
 const src = path.resolve(__dirname, '..', '..', 'build', 'nodejs');
-const dest = path.resolve(__dirname, '..', '..', 'dist', 'root', 'arunacore');
+const dest = path.resolve(rootPath, 'arunacore');
 
 if (fs.existsSync(path.resolve(__dirname, '..', '..', 'dist'))) {
   fs.rmSync(path.resolve(__dirname, '..', '..', 'dist'), { recursive: true, force: true });
 }
 
-fs.mkdirSync(path.resolve(__dirname, '..', '..', 'dist'));
-fs.mkdirSync(path.resolve(__dirname, '..', '..', 'dist', 'root'));
-fs.mkdirSync(path.resolve(__dirname, '..', '..', 'dist', 'root', 'arunacore'));
+fs.mkdirSync(path.resolve(rootPath, 'arunacore'), { recursive: true });
 
 const packageJson = require('../../package.json');
 
 packageJson.main = 'arunacore/src/main/start.js';
 packageJson.scripts = {
-  start: 'node --experimental-specifier-resolution=node arunacore/src/main/start.js',
+  start: 'node --loader=./arunacore/src/main/loader.js arunacore/src/main/start.js',
 };
 
-fs.writeFileSync(path.resolve(__dirname, '..', '..', 'dist', 'root', 'package.json'), JSON.stringify(packageJson, null, 2));
+fs.writeFileSync(path.resolve(rootPath, 'package.json'), JSON.stringify(packageJson, null, 2));
 
-fs.cpSync(path.resolve(__dirname, '..', '..', 'package-lock.json'), path.resolve(__dirname, '..', '..', 'dist', 'root', 'package-lock.json'), { force: true, preserveTimestamps: true });
+fs.cpSync(path.resolve(__dirname, '..', '..', 'package-lock.json'), path.resolve(rootPath, 'package-lock.json'), { force: true, preserveTimestamps: true });
 
 fs.cpSync(src, dest, { recursive: true, force: true, preserveTimestamps: true });
 
-fs.rmSync(path.resolve(__dirname, '..', '..', 'dist', 'root', 'arunacore', 'src', 'tests'), { recursive: true, force: true });
+fs.rmSync(path.resolve(rootPath, 'arunacore', 'src', 'tests'), { recursive: true, force: true });
 
-zipDirectory(path.resolve(__dirname, '..', '..', 'dist', 'root'), path.resolve(__dirname, '..', '..', 'dist', 'arunacore.zip'));
+zipDirectory(rootPath, path.resolve(distPath, 'arunacore.zip'));
