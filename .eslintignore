@@ -1,3 +1,4 @@
-build/**/*
-out/**/*
 src/scripts/*
+build/**/*
+dist/**/*
+out/**/*
