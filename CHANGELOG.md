@@ -1,8 +1,12 @@
-# v1.0.0-ALPHA.4
+# v1.0.0-BETA.0
 
-- [BREAKING] Drop support for all versions below Node.js v16
-  - Our build system was improved and can't build in version 14 or lower anymore, but may work if you use a pre-built version
-  - Some dependencies dropped support for version 16 or lower, so we had to drop support too
+## Yes, we are finally in beta! 🎉
+
+This release includes a lot of changes and improvements, so check the changelog to see what's new.
+
+- [BREAKING] Drop support for all versions below Node.js v16.20.0
+  - Our build system was improved and can't build in version 14 or lower anymore
+  - Also, our load system uses features from Node.js v16.20.0, so we can't support older versions anymore
 
 - [BREAKING] Message system was refactored
   - Instead of a crazy irc-inspired message system, we now use simple json objects
@@ -16,12 +20,13 @@
   - This doesn't affect the api, so your code probably will work without issues
 
 - [DEPRECATED] Various methods from `WebSocketParser` were deprecated
-  - They will be removed in the next major version (alpha -> beta)
+  - They will be removed in some future version, so update your code to use the new methods
 
 - [CHANGE] We changed the project structure
   - Say goodbye to multiples `node_modules` folders (we now use a single in the root and another in api only)
   - Now we use a single `package.json` file in the root of the project (and another in api only)
   - Now we use a single `tsconfig.json` file in the root of the project (and another in api only)
+  - This reduces significantly the project size and build time (and also makes it easier to maintain)
 
 - [CHANGE] Build system was improved
   - Since we have abandoned the multiple modules structure, we can now use a single build system
