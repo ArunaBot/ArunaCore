@@ -42,8 +42,8 @@ webs.on('message', (message) => {
   logger.info('Message received:', message);
 });
 
-if (process.env.FINISH_IN_SECONDS) {
-  const seconds = parseInt(process.env.FINISH_IN_SECONDS);
+if (process.env.ARUNACORE_FINISH_IN_SECONDS) {
+  const seconds = parseInt(process.env.ARUNACORE_FINISH_IN_SECONDS);
   logger.warn(`Finishing in ${seconds} seconds...`);
   setTimeout(() => {
     webs.finishWebSocket();

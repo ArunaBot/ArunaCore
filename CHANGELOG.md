@@ -37,10 +37,10 @@ This release includes a lot of changes and improvements, so check the changelog 
 
 - [NEW] Add configuration system
   - Now you can configure the system (including server port) editing the  `bundle/config/config.json` file
-  - You can also use enviroment `ARUNA_<PROPERTY>` variables to override the configuration file
+  - You can also use enviroment `ARUNACORE_<PROPERTY>` variables to override the configuration file
 
 - [NEW] Add `masterkey` to allow access to restricted endpoints and commands
-  - You can set the masterkey in the configuration file or in the enviroment variable `ARUNA_MASTERKEY`
+  - You can set the masterkey in the configuration file or in the enviroment variable `ARUNACORE_MASTERKEY`
   - If a masterkey is not provided, all restricted endpoints and commands will be disabled and will return a `503` error
 
 - [NEW] Create a connection structure
