@@ -119,5 +119,3 @@ configs/
 # Misc
 .breakpoints
 .replit
-package.json
-!*/package.json

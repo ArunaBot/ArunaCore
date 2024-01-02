@@ -20,7 +20,9 @@
 
 ## TODO
 
-- [ ] Make Todo List
+- [ ] Implement plugins
+- [ ] Create the wiki
+- [ ] Improve Todo List
 
 ## Introduction
 

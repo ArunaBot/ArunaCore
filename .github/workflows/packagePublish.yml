@@ -18,12 +18,12 @@ jobs:
       - name: Setup .npmrc (NPM)
         uses: actions/setup-node@v3
         with:
-          node-version: '12.x'
+          node-version: '20.x'
           registry-url: 'https://registry.npmjs.org'
           scope: '@arunabot'
 
-      - name: Enforce npm 8
-        run: npm install -g npm@8.x
+      - name: Update npm
+        run: npm install -g npm@latest
 
       - name: Get Current version
         id: current_version
@@ -57,14 +57,3 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  publish-docker:
-    needs: [publish]
-    if: needs.publish.result == 'success' && needs.publish.steps.compare_versions.outputs.skip != 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger Update Docker Image
-        uses: peter-evans/repository-dispatch@v2
-        with:
-          token: ${{ secrets.BOT_SECRET }}
-          event-type: publish-docker-image
-          repository: ArunaBot/ArunaCore-Docker

@@ -1,9 +1,15 @@
 export interface IMessage {
-  from: string,
+  from: {
+    id: string,
+    key?: string
+  },
   type?: string,
-  command: string,
-  to?: string,
-  secureKey?: string,
-  targetKey?: string,
-  args: string[]
+  target?: {
+    id: string,
+    key?: string
+  },
+  coreKey?: string,
+  command?: string,
+  args?: string[],
+  content: any
 }
