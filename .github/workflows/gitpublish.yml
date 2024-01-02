@@ -1,5 +1,6 @@
 name: Publish Tag and Release
 
+
 on:
   workflow_run:
     workflows: [Test]
@@ -30,11 +31,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
           CUSTOM_TAG: "v${{ steps.set_var.outputs.version }}"
+
   dist:
-    needs: tag
-    name: Create Dist Files
+    needs: [tag]
+    name: Create Dist and Release
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -43,6 +44,10 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 20.x
+  
+      - id: set_var
+        name: "Get Version"
+        run: echo ::set-output name=version::$(node -p "require('./package.json').version")
 
       - name: Update npm
         run: npm install -g npm@latest
@@ -52,45 +57,16 @@ jobs:
 
       - name: Generate Dist Files
         run: npm run dist
-  release:
-    needs: dist
-    name: Publish Release
-    runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
 
-      - name: "Refresh tags"
-        id: tag
-        run: git fetch --tags --force
-
-      - id: set_var
-        name: Get Version
-        run: echo ::set-output name=version::$(node -p "require('./package.json').version")
-
-      - name: Echo Debug 
-        run: echo "${{ steps.set_var.outputs.version }}"
-
-      - name: Create GitHub release
-        uses: Roang-zero1/github-create-release-action@master
+      - name: Release
+        uses: softprops/action-gh-release@v1
         with:
-          prerelease_regex: ^v[0-9]\.[0-9]\.[0-9]\-ALPHA\.[0-9]+$
-          created_tag: v${{ steps.set_var.outputs.version }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload release artifacts
-        uses: Roang-zero1/github-upload-release-artifacts-action@master
-        with:
-          args: "dist/arunacore.zip"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          files: dist/arunacore.zip
+          tag_name: v${{ steps.set_var.outputs.version }}
 
   publish-docker:
-    needs: release
+    needs: [dist]
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Trigger Update Docker Image
         uses: peter-evans/repository-dispatch@v2
@@ -98,3 +74,4 @@ jobs:
           token: ${{ secrets.BOT_SECRET }}
           event-type: publish-docker-image
           repository: ArunaBot/ArunaCore-Docker
+
