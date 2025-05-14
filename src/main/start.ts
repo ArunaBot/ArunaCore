@@ -8,19 +8,19 @@ console.log('Loading configuration...');
 const configurationLoader = new ConfigurationLoader();
 const configs = configurationLoader.loadConfiguration();
 
-const debug = process.env.NODE_ENV === 'production' ?? configs.debug ?? false;
+const debug = (process.env.NODE_ENV === 'production') || (configs.debug ?? false);
 const prefix = process.env.ARUNACORE_PREFIX ?? configs.id ?? 'arunacore';
+const requireAuth = configs.requireAuth ?? false;
 const autoLogEnd = configs.autoLogEnd ?? true;
-const requireAuth = process.env.ARUNACORE_REQUIREAUTH === 'true' ?? configs.requireAuth ?? false;
 
-var port = parseInt(process.env.ARUNACORE_PORT ?? configs.port?.toString() ?? '3000');
+let port = parseInt(process.env.ARUNACORE_PORT ?? configs.port?.toString() ?? '3000');
 port = isNaN(port) ? configs.port ?? 3000 : port;
 
 const logger = new Logger({ ...(configs.logger ?? { allLineColored: true, coloredBackground: false }), debug, prefix, disableFatalCrash: true });
 
 logger.info('Logger Initialized!');
 
-var masterKey: (string | null) = process.env.ARUNACORE_MASTERKEY ?? configs.masterKey ?? 'changeme';
+let masterKey: (string | null) = configs.masterKey ?? 'changeme';
 
 if (masterKey === 'changeme') {
   logger.error('Master key is not set or is equal to "changeme", please set it in the environment variable ARUNACORE_MASTERKEY or in the configuration file!');

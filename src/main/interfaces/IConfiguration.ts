@@ -5,7 +5,7 @@ export interface ILoggerConfiguration {
 }
 
 export interface IConfiguration extends ILoggerConfiguration {
-  fileVersion: number;
+  readonly fileVersion: number;
   id?: string;
   debug?: boolean;
   port?: number;
@@ -13,4 +13,16 @@ export interface IConfiguration extends ILoggerConfiguration {
   autoLogEnd?: boolean;
   masterKey?: string;
   requireAuth?: boolean;
+}
+
+export class Configuration implements IConfiguration {
+  fileVersion: number;
+  id?: string | undefined;
+  debug?: boolean | undefined;
+  port?: number | undefined;
+  host?: string | undefined;
+  autoLogEnd?: boolean | undefined;
+  masterKey?: string | undefined;
+  requireAuth?: boolean | undefined;
+  logger?: ILoggerOptions | undefined;
 }

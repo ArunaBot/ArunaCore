@@ -1,6 +1,6 @@
 import { FileLoader, getDirnameAuto } from '../utils';
-import { IConfiguration } from '../interfaces/index';
 import { Logger } from '@promisepending/logger.js';
+import { Configuration, IConfiguration } from '../interfaces';
 import path from 'path';
 
 export class ConfigurationLoader {
@@ -8,7 +8,7 @@ export class ConfigurationLoader {
   private __dirname = getDirnameAuto(import.meta.url);
 
   constructor(debug = false) {
-    this.logger = new Logger({ prefix: 'CONFIG', debug, allLineColored: true });
+    this.logger = new Logger({ prefix: 'config', debug, allLineColored: true });
   }
 
   /**
@@ -18,6 +18,16 @@ export class ConfigurationLoader {
   public loadConfiguration(): IConfiguration {
     const defaultConfig = FileLoader.load(path.resolve(this.__dirname, '..', '..', '..', 'resources', 'default_config.json'));
     const configs = FileLoader.jsonLoader(path.resolve(this.__dirname, '..', '..', '..', '..', 'config', 'config.json'), defaultConfig) as IConfiguration;
+    const configurationKeys = Object.keys(new Configuration());
+    const lowercaseKeys = configurationKeys.map((key: string) => key.toLowerCase());
+    Object.keys(process.env).forEach((key) => {
+      if (key.startsWith('ARUNACORE_')) {
+        const envKey = key.replace('ARUNACORE_', '').toLowerCase();
+
+        // @ts-expect-error 2540
+        if (lowercaseKeys.includes(envKey) && envKey !== 'fileversion') configs[configurationKeys[lowercaseKeys.indexOf(envKey)]] = process.env[key];
+      }
+    });
     this.logger.info('Configuration loaded');
     return configs;
   }

@@ -61,7 +61,7 @@ export class WebSocketParser {
       }
 
       return null;
-    } catch (err) {
+    } catch {
       return null;
     }
   }
