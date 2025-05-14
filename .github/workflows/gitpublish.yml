@@ -11,31 +11,45 @@ jobs:
   tag:
     name: Publish Tag
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    outputs:
+      version: ${{ steps.current_version.outputs.version }}
+      skip: ${{ steps.compare_versions.outputs.skip }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: "Refresh tags"
-        id: refresh-tag
-        run: git fetch --tags --force
+      - name: Get Current version
+        id: current_version
+        run: echo version=v$(node -p "require('./package.json').version") >> $GITHUB_OUTPUT
 
-      - id: set_var
-        name: Get Version
-        run: echo ::set-output name=version::$(node -p "require('./package.json').version")
+      - name: Compare latest tag
+        id: git_version
+        run: |
+          git fetch --tags
+          echo latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`) >> $GITHUB_OUTPUT
+
+      - name: Compare versions and skip if same
+        id: compare_versions
+        if: ${{ steps.current_version.outputs.version == steps.git_version.outputs.latest_tag }}
+        run: echo "skip=true" >> $GITHUB_OUTPUT && echo "Skipping publish because versions are the same" && exit 0
 
       - name: Push Tag
+        if: ${{ steps.compare_versions.outputs.skip != 'true' }}
         id: tag
         uses: anothrNick/github-tag-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
-          CUSTOM_TAG: "v${{ steps.set_var.outputs.version }}"
+          CUSTOM_TAG: "${{ steps.current_version.outputs.version }}"
 
-  dist:
-    needs: [tag]
-    name: Create Dist and Release
+
+  release:
+    needs: tag
+    name: Publish Release
     runs-on: ubuntu-latest
+
+    if: ${{ needs.tag.outputs.skip != 'true' }}
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -43,14 +57,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 20.x
-  
-      - id: set_var
-        name: "Get Version"
-        run: echo ::set-output name=version::$(node -p "require('./package.json').version")
-
-      - name: Update npm
-        run: npm install -g npm@latest
+          node-version: 22.x
 
       - name: Install Dependencies
         run: npm ci
@@ -62,10 +69,10 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: dist/arunacore.zip
-          tag_name: v${{ steps.set_var.outputs.version }}
+          tag_name: v${{ needs.tag.outputs.version }}
 
   publish-docker:
-    needs: [dist]
+    needs: release
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Update Docker Image

@@ -9,51 +9,43 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    permissions:
+      contents: read
+      id-token: write
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Setup .npmrc file to publish to npm
       - name: Setup .npmrc (NPM)
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: 22
           registry-url: 'https://registry.npmjs.org'
           scope: '@arunabot'
 
-      - name: Update npm
-        run: npm install -g npm@latest
-
       - name: Get Current version
         id: current_version
-        working-directory: ./api
-        run: echo ::set-output name=version::$(node -p "require('./package.json').version")
+        run: echo version=$(node -p "require('./package.json').version") >> $GITHUB_OUTPUT
 
       - name: Get current npm version
         id: npm_version
-        run: echo ::set-output name=version::$(npm view arunacore-api version)
-      
+        run: echo version=$(npm view arunabase version) >> $GITHUB_OUTPUT
+
       - name: Compare versions and skip if same
         id: compare_versions
         if: ${{ steps.current_version.outputs.version == steps.npm_version.outputs.version }}
-        run: echo ::set-output name=skip::true && echo "Skipping publish as versions are same" && exit 0
+        run: echo "skip=true" >> $GITHUB_OUTPUT && echo "Skipping publish because versions are the same" && exit 0
 
       - name: Install dependencies
+        if: ${{ steps.compare_versions.outputs.skip != 'true' }}
         working-directory: ./api
         run: npm ci
 
-      - name: Build
-        working-directory: ./api
-        run: npm run build
-
-      - name: Prepare to publish
-        working-directory: ./api
-        run: npm run pdeploy
-
       - name: Publish to npm
-        working-directory: ./api/out
-        run: npm publish
+        working-directory: ./api
+        run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

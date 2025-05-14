@@ -21,7 +21,7 @@ export class MessageHandler {
     var message: IMessage | null = null;
     try {
       message = JSON.parse(data.data.toString());
-    } catch (e) {
+    } catch {
       message = null;
     }
 

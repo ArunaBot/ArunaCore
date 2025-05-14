@@ -31,7 +31,7 @@ export class ArunaClient extends EventEmitter {
   private secureMode: boolean;
   private shardMode: boolean;
   private secureKey: string | null = null;
-  private ws: ws.WebSocket | null = null;
+  private ws: ws | null = null;
   private isRegistered = false;
   private logger: Logger;
   private host: string;
