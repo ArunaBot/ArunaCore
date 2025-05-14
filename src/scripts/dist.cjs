@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-var archiver = require('archiver');
+const archiver = require('archiver');
 const path = require('path');
 const fs = require('fs');
 
