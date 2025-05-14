@@ -1,3 +1,14 @@
+# v1.0.0-BETA.1
+
+- [BREAKING] Drop support for all versions below Node.js v18.8.0
+  - These versions are really old and we can't support them anymore
+
+- [NEW] Improvments in enviroment variable system
+  - Now you can use `ARUNACORE_<PROPERTY>` variables to override all properties in the configuration file
+    - For real this time
+
+- [CHORE] Update dependencies
+
 # v1.0.0-BETA.0
 
 ## Yes, we are finally in beta! 🎉
