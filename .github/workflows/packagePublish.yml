@@ -43,6 +43,10 @@ jobs:
         working-directory: ./api
         run: npm ci
 
+      - name: Copy readme
+        if: ${{ steps.compare_versions.outputs.skip != 'true' }}
+        run: cp README.md ./api/README.md
+
       - name: Publish to npm
         working-directory: ./api
         run: npm publish --provenance --access public
