@@ -69,7 +69,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: dist/arunacore.zip
-          tag_name: v${{ needs.tag.outputs.version }}
+          tag_name: ${{ needs.tag.outputs.version }}
 
   publish-docker:
     needs: release
