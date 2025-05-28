@@ -92,15 +92,23 @@ export class ArunaClient extends EventEmitter {
   }
 
   /**
-   * Sends a message to the ArunaCore server
-   * @param {string} command Command identifier of the message (100, 101, 102, etc...)
-   * @param {string[]} args Arguments of the message
-   * @param {string?} [to] Target of the message
-   * @param {string?} [targetKey] Target key of the message
-   * @param {string?} [type] Client type
-   * @returns {Promise<void>}
+   * Sends a message to the ArunaCore server.
+   * 
+   * @param {any} content - Content of the message, can be a string or a serializable object.
+   * @param {Object} options - Options for the message.
+   * @param {string} [options.type] - Type of the client or message.
+   * @param {string} [options.command] - Command code for the message.
+   * @param {{ id: string, key?: string }} [options.target] - Target of the message (id and optional key).
+   * @param {string[]} [options.args] - Arguments of the message.
+   * @returns {Promise<void>} Resolves when the message is sent.
+   * 
    * @example
-   * client.send('100', ['Hello World!'], 'server', 'serverKey', 'client');
+   * await client.send('100', {
+   *   args: ['Hello World!'],
+   *   target: { id: 'server', key: 'serverKey' },
+   *   type: 'client',
+   *   command: 'someCommand'
+   * });
    */
   public async send(content: any, { type, command, target, args }: { type?: string, command?: string, target?: { id: string, key?: string }, args?: string[] }): Promise<void> {
     return new Promise((resolve, reject) => {
