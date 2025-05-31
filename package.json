@@ -7,14 +7,14 @@
   "scripts": {
     "preinstall": "cd api && npm install",
     "preci": "cd api && npm ci",
-    "start": "node --loader=./build/nodejs/src/main/loader.js build/nodejs/src/main/start.js",
+    "start": "node --import=./build/nodejs/src/main/registerLoader.js build/nodejs/src/main/start.js",
     "eslint:fix": "eslint ./src --fix && eslint ./api/src --fix",
     "build": "npx tsc --build",
     "postbuild": "node src/scripts/updateResources.cjs",
     "predist": "npm run build",
     "dist": "node src/scripts/dist.cjs",
     "pretest": "npm run build",
-    "test": "node --loader=./build/nodejs/src/main/loader.js build/nodejs/src/tests/test.js"
+    "test": "node --import=./build/nodejs/src/main/registerLoader.js build/nodejs/src/tests/test.js"
   },
   "repository": {
     "type": "git",
