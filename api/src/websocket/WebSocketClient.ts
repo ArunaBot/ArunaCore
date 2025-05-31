@@ -1,5 +1,5 @@
-import { Logger } from '@promisepending/logger.js';
 import { IMessage, IWebsocketOptions } from '../interfaces';
+import { Logger } from '@promisepending/logger.js';
 import { WebSocketParser, utils } from '../';
 import { EventEmitter } from 'events';
 import ws from 'ws';
