@@ -1,6 +1,6 @@
 {
   "name": "arunacore-api",
-  "version": "1.0.0-BETA.1",
+  "version": "1.0.0-BETA.2",
   "description": "ArunaCore is an open source websocket server made with nodejs for intercomunication between applications.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
