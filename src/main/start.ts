@@ -20,7 +20,7 @@ const logger = new Logger({ ...(configs.logger ?? { allLineColored: true, colore
 
 logger.info('Logger Initialized!');
 
-let masterKey: (string | null) = configs.masterKey ?? 'changeme';
+let masterKey: (string | null) = configs.masterkey ?? 'changeme';
 
 if (masterKey === 'changeme') {
   logger.error('Master key is not set or is equal to "changeme", please set it in the environment variable ARUNACORE_MASTERKEY or in the configuration file!');
