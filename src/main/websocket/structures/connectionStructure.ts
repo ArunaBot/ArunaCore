@@ -59,9 +59,10 @@ export class ConnectionStructure {
       this.pingTimeout = setTimeout(() => {
         if (!this.isAlive) {
           this.connection.terminate();
+          this.connection.removeAllListeners('pong');
           this.logger.warn(`Connection ${this.id} appears to be dead!`);
         }
-        return Promise.resolve(this.isAlive);
+        return resolve(this.isAlive);
       }, 5000);
 
       this.connection.ping();
