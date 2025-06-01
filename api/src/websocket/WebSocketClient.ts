@@ -4,6 +4,18 @@ import { WebSocketParser, utils } from '../';
 import { EventEmitter } from 'events';
 import ws from 'ws';
 
+
+interface ArunaEvents {
+  'ready': [];
+  'message': [IMessage];
+  'unauthorized': [IMessage];
+  'error': [Error];
+  'close': [number, string];
+  'finish': [];
+  [command: string]: [...any];
+}
+
+
 /**
  * Main class for the api client
  * @class ArunaClient
@@ -27,17 +39,17 @@ import ws from 'ws';
  * });
  * client.connect(); // optional: secureKey
  */
-export class ArunaClient extends EventEmitter {
+export class ArunaClient extends EventEmitter<ArunaEvents> {
+  private finishTimeout: ReturnType<typeof setTimeout> | null = null;
+  private secureKey: string | null = null;
+  private isRegistered = false;
+  private ws: ws | null = null;
   private secureMode: boolean;
   private shardMode: boolean;
-  private secureKey: string | null = null;
-  private ws: ws | null = null;
-  private isRegistered = false;
   private logger: Logger;
   private host: string;
   private port: number;
   private id: string;
-  private finishTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(options: IWebsocketOptions) {
     super();
@@ -73,7 +85,7 @@ export class ArunaClient extends EventEmitter {
     return new Promise((resolve, reject) => {
       this.ws!.on('message', (message) => { this.onMessage(message.toString()); });
 
-      this.ws!.on('close', (code, reason) => { this.emit('close', code, reason); });
+      this.ws!.on('close', (code, reason) => { this.emit('close', code, reason.toString()); });
 
       this.ws!.on('error', (err) => { this.emit('error', err); });
 
