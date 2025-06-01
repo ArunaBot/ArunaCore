@@ -1,3 +1,15 @@
+# v1.0.0-BETA.3
+
+- [FIX] Dead WebSocket connections not being properly handled  
+  - Now, when a connection is considered dead, all `'pong'` event listeners are removed and the promise resolves the correct state.
+  - This prevents memory leaks and improves stability.
+
+- [FIX] Wrong `masterkey` casing in configuration  
+  - Fixed an issue where the `masterkey` property was not being recognized due to incorrect casing.
+
+- [NEW] Added typing for client-emitted events  
+  - This improves developer experience and type safety when handling events emitted by clients.
+
 # v1.0.0-BETA.2
 
 - [BREAKING] Removed deprecated methods from `WebSocketParser`  
