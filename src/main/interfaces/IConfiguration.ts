@@ -11,7 +11,7 @@ export interface IConfiguration extends ILoggerConfiguration {
   port?: number;
   host?: string;
   autoLogEnd?: boolean;
-  masterKey?: string;
+  masterkey?: string;
   requireAuth?: boolean;
 }
 
@@ -22,7 +22,7 @@ export class Configuration implements IConfiguration {
   port?: number | undefined;
   host?: string | undefined;
   autoLogEnd?: boolean | undefined;
-  masterKey?: string | undefined;
+  masterkey?: string | undefined;
   requireAuth?: boolean | undefined;
   logger?: ILoggerOptions | undefined;
 }

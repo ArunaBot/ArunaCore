@@ -49,6 +49,7 @@ jobs:
         run: cp README.md ./api/README.md
 
       - name: Publish to npm
+        if: ${{ steps.compare_versions.outputs.skip != 'true' }}
         working-directory: ./api
         run: npm publish --provenance --access public
         env:
