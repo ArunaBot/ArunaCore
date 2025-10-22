@@ -4,8 +4,8 @@ import { ISocketOptions } from '../interfaces';
 import { IMessage } from '../../../api/src';
 import { EventEmitter } from 'events';
 import { autoLogEnd } from '../utils';
+import { WebSocketServer } from 'ws';
 import { HTTPServer } from '../http';
-import ws from 'ws';
 
 export class Socket extends EventEmitter {
   private connectionManager: ConnectionManager;
@@ -14,8 +14,7 @@ export class Socket extends EventEmitter {
   private masterKey: string | null;
   private httpServer: HTTPServer;
   private requireAuth: boolean;
-  // @ts-expect-error Broken WS package types, works in runtime
-  private ws: ws.Server;
+  private ws: WebSocketServer;
   private logger: Logger;
 
   constructor(port: number, logger: Logger, options?: ISocketOptions) {
@@ -24,8 +23,7 @@ export class Socket extends EventEmitter {
     this.httpServer.enableUpgradeRequired();
     this.httpServer.listen(port);
     this.logger = logger;
-    // @ts-expect-error Broken WS package types, works in runtime
-    this.ws = new ws.Server({
+    this.ws = new WebSocketServer({
       server: this.httpServer.getServer()!,
       maxPayload: 512 * 1024,
       perMessageDeflate: {
@@ -56,7 +54,6 @@ export class Socket extends EventEmitter {
     this.connectionManager = new ConnectionManager(this);
     this.messageHandler = new MessageHandler(this);
 
-    // @ts-expect-error Broken WS package types, works in runtime
     this.ws.on('connection', (ws) => { this.connectionManager.onConnection(ws); }); // When a connection is made, call the onConnection function
 
     this.connectionManager.pingLoop();

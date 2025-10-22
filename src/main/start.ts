@@ -1,10 +1,27 @@
 import { ConfigurationLoader } from './configuration';
 import { Logger } from '@promisepending/logger.js';
+import { existsSync, readFileSync } from 'fs';
 import { Socket } from './websocket';
+
+function isRunningInDocker(): boolean {
+  try {
+    if (existsSync('/.dockerenv')) {
+      return true;
+    }
+
+    const cgroup = readFileSync('/proc/1/cgroup', 'utf8');
+    if (cgroup.includes('docker') || cgroup.includes('kubepods') || cgroup.includes('containerd')) {
+      return true;
+    }
+  } catch {}
+
+  return false;
+}
 
 console.log('Initializing ArunaCore...');
 console.log('Loading configuration...');
 
+const runningInDocker = isRunningInDocker();
 const configurationLoader = new ConfigurationLoader();
 const configs = configurationLoader.loadConfiguration();
 
@@ -14,11 +31,12 @@ const requireAuth = configs.requireAuth ?? false;
 const autoLogEnd = configs.autoLogEnd ?? true;
 
 let port = parseInt(process.env.ARUNACORE_PORT ?? configs.port?.toString() ?? '3000');
-port = isNaN(port) ? configs.port ?? 3000 : port;
+port = runningInDocker ? 3000 : (isNaN(port) ? configs.port ?? 3000 : port);
 
 const logger = new Logger({ ...(configs.logger ?? { allLineColored: true, coloredBackground: false }), debug, prefix, disableFatalCrash: true });
 
 logger.info('Logger Initialized!');
+logger.debug(`Running inside Docker: ${runningInDocker}`);
 
 let masterKey: (string | null) = configs.masterkey ?? 'changeme';
 
