@@ -1,11 +1,15 @@
 import { ConnectionManager, MessageHandler } from './managers';
+import { ConnectionStructure } from './structures';
 import { Logger } from '@promisepending/logger.js';
 import { ISocketOptions } from '../interfaces';
 import { IMessage } from '../../../api/src';
+import { IncomingMessage } from 'http';
 import { EventEmitter } from 'events';
 import { autoLogEnd } from '../utils';
-import { WebSocketServer } from 'ws';
 import { HTTPServer } from '../http';
+import semver from 'semver';
+import Stream from 'stream';
+import ws from 'ws';
 
 export class Socket extends EventEmitter {
   private connectionManager: ConnectionManager;
@@ -14,17 +18,22 @@ export class Socket extends EventEmitter {
   private masterKey: string | null;
   private httpServer: HTTPServer;
   private requireAuth: boolean;
-  private ws: WebSocketServer;
   private logger: Logger;
+  // @ts-expect-error -- ws server is broken with esm
+  private ws: ws.Server;
 
   constructor(port: number, logger: Logger, options?: ISocketOptions) {
     super();
-    this.httpServer = new HTTPServer(logger);
-    this.httpServer.enableUpgradeRequired();
-    this.httpServer.listen(port);
     this.logger = logger;
-    this.ws = new WebSocketServer({
-      server: this.httpServer.getServer()!,
+
+    this.httpServer = new HTTPServer(logger);
+    this.httpServer.listen(port);
+
+    this.httpServer.on('upgrade', this.webSocketUpgrade.bind(this));
+    
+    // @ts-expect-error -- ws server is broken with esm
+    this.ws = new ws.Server({
+      noServer: true,
       maxPayload: 512 * 1024,
       perMessageDeflate: {
         zlibDeflateOptions: {
@@ -54,14 +63,60 @@ export class Socket extends EventEmitter {
     this.connectionManager = new ConnectionManager(this);
     this.messageHandler = new MessageHandler(this);
 
-    this.ws.on('connection', (ws) => { this.connectionManager.onConnection(ws); }); // When a connection is made, call the onConnection function
-
     this.connectionManager.pingLoop();
 
     this.emit('ready');
   }
 
-  private rawSend (connection: WebSocket, data: any):void {
+  private async webSocketUpgrade(req: IncomingMessage, socket: Stream.Duplex, head: Buffer): Promise<void> {
+    const apiVersion = req.headers['arunacore-api-version'] as string | undefined;
+    const appId = req.headers['client-id'] as string | undefined;
+    const userToken = req.headers['authorization'];
+
+    if (!apiVersion || !appId) {
+      socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
+      socket.destroy();
+      return;
+    }
+
+    // FIXME: Define supported versions properly
+    if (!semver.satisfies(apiVersion, '>= 1.0.0-BETA.4 < 2.0.0')) {
+      socket.write('HTTP/1.1 412 Precondition Failed\r\n\r\n');
+      socket.destroy();
+      return;
+    }
+    
+    if (this.requireAuth && !userToken) {
+      socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+      socket.destroy();
+      return;
+    }
+
+    const locateConnection = this.connectionManager.getConnection(appId);
+
+    if (locateConnection && (await this.connectionManager.ping(locateConnection))) {
+      socket.write('HTTP/1.1 409 Conflict\r\n\r\n');
+      socket.destroy();
+      return;
+    }
+
+    // @ts-expect-error -- ws server is broken with esm
+    this.ws.handleUpgrade(req, socket, head, (client, _req) => {
+      this.connectionManager.onConnection(client);
+      const connection = new ConnectionStructure({
+        id: appId,
+        isAlive: true,
+        connection: client,
+        apiVersion: apiVersion, // TODO: Create a good way to check if the client is using a supported api version
+        isSecure: !!userToken,
+        secureKey: userToken,
+        isSharded: false, // TODO: Implement sharding
+      }, this.logger);
+      this.connectionManager.addConnection(connection);
+    });
+  }
+
+  private rawSend(connection: WebSocket, data: any):void {
     connection.send(data);
   }
 

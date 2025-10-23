@@ -1,4 +1,4 @@
-import { createServer, IncomingMessage, Server, ServerResponse, STATUS_CODES } from 'http';
+import { createServer, IncomingMessage, Server, ServerResponse } from 'http';
 import { Logger } from '@promisepending/logger.js';
 import { ExtendedRequest } from './structures';
 import { EHTTPMethod } from '../enums';
@@ -6,7 +6,6 @@ import querystring from 'querystring';
 
 export class HTTPServer {
   private server: Server | null = null;
-  private isUpgradeRequired = false;
   private isListen = false;
   private routes: {
     route: string;
@@ -97,26 +96,6 @@ export class HTTPServer {
     if (this.isListen) return;
     this.server.listen(port);
     this.isListen = true;
-  }
-
-  public enableUpgradeRequired(path = '/'): void {
-    if (this.isListen || this.isUpgradeRequired) return;
-    this.isUpgradeRequired = true;
-    this.registerRoute(path, EHTTPMethod.GET, (_req: ExtendedRequest, res: ServerResponse) => {
-      const body = STATUS_CODES[426];
-
-      if (!body) {
-        res.statusCode = 500;
-        res.end('Unknown status code');
-        return;
-      }
-
-      res.writeHead(426, {
-        'Content-Length': body.length,
-        'Content-Type': 'text/plain',
-      });
-      return res.end(body);
-    });
   }
 
   public close(): void {

@@ -1,11 +1,10 @@
-import { IMessage, WebSocketParser } from '../../../../api/src';
+import { WebSocketParser } from '../../../../api/src';
 import { ConnectionStructure } from '../structures';
 import { Logger } from '@promisepending/logger.js';
 import { Socket } from '../socket';
 import * as wss from 'ws';
 
 export class ConnectionManager {
-  private timeouts: Map<wss.WebSocket, ReturnType<typeof setTimeout>> = new Map();
   private connections: Map<string, ConnectionStructure> = new Map();
   private pingLoopTimeout: any;
   private requireAuth: boolean;
@@ -22,65 +21,6 @@ export class ConnectionManager {
 
   public onConnection(ws: wss.WebSocket):void {
     ws.on('message', (message) => this.socket.getMessageHandler().onMessage({ data: message, target: ws, type: '' }, ws));
-    this.timeouts.set(ws,
-      setTimeout(() => {
-        const found = Array.from(this.connections.entries()).find(([, connection]) => connection.getConnection() === ws);
-        if (!found) ws.close(1000, 'Authentication timeout');
-      }, 15000),
-    );
-  }
-
-  /**
-   * Register a new connection on the server
-   * @param ws the websocket connection
-   * @param info the original message
-   */
-  public async registerConnection(ws: wss.WebSocket, info: IMessage): Promise<void> {
-    const connectionFounded = this.connections.get(info.from.id);
-    if (!connectionFounded) {
-      // Register connection
-      if (info.type !== 'register') {
-        ws.send(WebSocketParser.formatToString({ id: 'arunacore' }, 'invalid register message', { command: '400', type: 'register' }));
-      } else {
-        // Let's check the secure mode
-        var secureMode = false;
-        var secureKey;
-        if (info.from.key) {
-          secureMode = true;
-          secureKey = info.from.key;
-        }
-
-        if (this.requireAuth && !secureMode) {
-          ws.close(1000, WebSocketParser.formatToString({ id: 'arunacore' }, 'unauthorized', { command: '401', target: { id: info.from.id }, type: 'disconnect' }));
-          return;
-        }
-
-        const connection = new ConnectionStructure({
-          id: info.from.id,
-          isAlive: true,
-          connection: ws,
-          apiVersion: '', // TODO: Create a good way to check if the client is using a supported api version
-          isSecure: secureMode,
-          secureKey,
-          isSharded: false, // TODO: Implement sharding
-        }, this.logger);
-
-        this.connections.set(info.from.id, connection); // Add connection to list
-        ws.send(WebSocketParser.formatToString({ id: 'arunacore' }, 'register-success', { command: '000', target: { id: info.from.id }, type: 'register' }));
-
-        this.logger.info(`Connection ${info.from.id} registered!`);
-        if (this.timeouts.has(ws)) clearTimeout(this.timeouts.get(ws));
-      }
-    } else if (info.type === 'register') {
-      if (!(await this.ping(connectionFounded))) {
-        this.logger.warn(`Connection ${info.from.id} appears to be dead and a new connection is trying to register with the same id, old connection was destroyed!`);
-        this.registerConnection(ws, info);
-        return;
-      }
-      // Send a message to the client informing that the connection with this id is already registered
-      ws.send(WebSocketParser.formatToString({ id: 'arunacore' }, 'id-already-registered', { command: '403', target: { id: info.from.id }, type: 'register' }));
-      this.logger.warn(`ID ${info.from.id} is already registered but a new connection is trying to register with the same id. Probably the client is trying to connect twice.`);
-    }
   }
 
   // public async unregisterConnection(connection: ConnectionStructure, message: IMessage): Promise<void> {
@@ -91,6 +31,13 @@ export class ConnectionManager {
     }
 
     this.connections.delete(connection.getID());
+  }
+
+  /**
+   * @private
+   */
+  public addConnection(connection: ConnectionStructure): void {
+    this.connections.set(connection.getID(), connection);
   }
 
   /**

@@ -30,18 +30,18 @@ export class MessageHandler {
     const fromConnection = this.connectionManager.getConnection(message.from.id);
 
     if (!fromConnection && message.type === 'register') {
-      this.connectionManager.registerConnection(connection, message);
+      connection.close(1000, this.internalFormatToString('deprecated-register-method', { command: '410', target: { id: message.from.id }, type: 'disconnect' }));
       return;
     }
 
     if (!fromConnection) {
-      connection.send(WebSocketParser.formatToString({ id: 'arunacore' }, 'unprocessable-entity', { command: '422', target: { id: message.from.id }, type: 'register' }));
+      connection.send(this.internalFormatToString('unprocessable-entity', { command: '422', target: { id: message.from.id }, type: 'register' }));
       return;
     }
 
     if (fromConnection.getIsSecure()) {
       if (fromConnection.getSecureKey() !== message.from.key) {
-        connection.close(1000, WebSocketParser.formatToString({ id: 'arunacore' }, 'unauthorized', { command: '401', target: { id: message.from.id }, type: 'disconnect' }));
+        connection.close(1000, this.internalFormatToString('unauthorized', { command: '401', target: { id: message.from.id }, type: 'disconnect' }));
         return;
       }
     }
@@ -56,18 +56,18 @@ export class MessageHandler {
     const targetConnection = message.target?.id ? this.connectionManager.getConnection(message.target.id) : null;
 
     if (!targetConnection) {
-      connection.send(WebSocketParser.formatToString({ id: 'arunacore' }, 'target-not-found', { command: '404', target: { id: message.from.id }, args: [message.target?.id ?? ''] }));
+      connection.send(this.internalFormatToString('target-not-found', { command: '404', target: { id: message.from.id }, args: [message.target?.id ?? ''] }));
       return;
     }
 
     // ping the sender to check if it's alive
     if (!await this.connectionManager.ping(targetConnection)) {
-      connection.send(WebSocketParser.formatToString({ id: 'arunacore' }, 'target-not-found', { command: '404', target: { id: message.from.id }, args: [message.target?.id ?? ''] }));
+      connection.send(this.internalFormatToString('target-not-found', { command: '404', target: { id: message.from.id }, args: [message.target?.id ?? ''] }));
       return;
     }
 
     if (targetConnection.getIsSecure() && targetConnection.getSecureKey() !== message.target?.key) {
-      connection.send(WebSocketParser.formatToString({ id: 'arunacore' }, 'unauthorized', { command: '401', target: { id: message.from.id } }));
+      connection.send(this.internalFormatToString('unauthorized', { command: '401', target: { id: message.from.id } }));
       return;
     }
 
@@ -95,15 +95,15 @@ export class MessageHandler {
       // Get the list of all current connections alive ids
       case '015':
         if (!this.masterKey) {
-          connection.send(WebSocketParser.formatToString({ id: 'arunacore' }, 'service-unavaliable', { command: '503', target: { id: message.from.id }, type: 'unavaliable' }));
+          connection.send(this.internalFormatToString('service-unavaliable', { command: '503', target: { id: message.from.id }, type: 'unavaliable' }));
           break;
         }
         if (this.masterKey !== message.coreKey) {
-          connection.send(WebSocketParser.formatToString({ id: 'arunacore' }, 'unauthorized', { command: '401', target: { id: message.from.id } }));
+          connection.send(this.internalFormatToString('unauthorized', { command: '401', target: { id: message.from.id } }));
           break;
         }
         var ids: string[] = Array.from(this.connectionManager.getAliveConnections().keys());
-        connection.send(WebSocketParser.formatToString({ id: 'arunacore' }, ids, { command: '015', target: { id: message.from.id } }));
+        connection.send(this.internalFormatToString(ids, { command: '015', target: { id: message.from.id } }));
         break;
       case '000':
         break;
@@ -134,5 +134,9 @@ export class MessageHandler {
     else if (!(isNaN(Number(command))) && (Number(command) >= 0 && Number(command) <= 99)) isInternal = true;
 
     return Promise.resolve(isInternal);
+  }
+
+  private internalFormatToString(content: any, { type, command, target, args }: { type?: string, command?: string, target?: { id: string, key?: string }, args?: string[] }): string {
+    return WebSocketParser.formatToString({ id: 'arunacore' }, content, { type, command, target, args });
   }
 }

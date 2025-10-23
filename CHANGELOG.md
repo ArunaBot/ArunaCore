@@ -1,4 +1,19 @@
-# v1.0.0-BETA.3
+# ArunaCore Changelog
+
+## v1.0.0-BETA.4
+
+  - [BREAKING] Application register flow changed
+    - New websocket connections now register on the upgrade request, not after the connection is established.
+    - This simplifies the connection process and improves performance.
+
+  - [BREAKING] Removed `isRegistered()` method from `ArunaClient`
+    - This method became obsolete with the new registration flow.
+  
+  - [FEAT] Better docker support
+    - Enforce port to 3000 inside the container, regardless of the configuration file.
+    - This allows easier deployment and avoids port conflicts, allowing the user to map the port as needed in the docker itself.
+
+## v1.0.0-BETA.3
 
 - [FIX] Dead WebSocket connections not being properly handled  
   - Now, when a connection is considered dead, all `'pong'` event listeners are removed and the promise resolves the correct state.
@@ -12,7 +27,7 @@
 - [NEW] Added typing for client-emitted events  
   - This improves developer experience and type safety when handling events emitted by clients.
 
-# v1.0.0-BETA.2
+## v1.0.0-BETA.2
 
 - [BREAKING] Removed deprecated methods from `WebSocketParser`  
   - These methods were deprecated in the previous version, so they were removed now.
@@ -22,7 +37,7 @@
 
 - [DOCS] Updated important JSDoc comments
 
-# v1.0.0-BETA.1
+## v1.0.0-BETA.1
 
 - [BREAKING] Dropped support for all versions below Node.js v18.8.0  
   - These versions are too old and can't be supported anymore.
@@ -33,9 +48,9 @@
 
 - [CHORE] Updated dependencies
 
-# v1.0.0-BETA.0
+## v1.0.0-BETA.0
 
-## Yes, we are finally in beta! 🎉
+### Yes, we are finally in beta! 🎉
 
 This release includes a lot of changes and improvements, so check the changelog to see what's new.
 
@@ -100,7 +115,7 @@ This release includes a lot of changes and improvements, so check the changelog 
 - [CHORE] Created a changelog file to keep track of changes  
   - Probably includes all changes from previous versions.
 
-# v1.0.0-ALPHA.3
+## v1.0.0-ALPHA.3
 
 - [BREAKING] Switched to external log library  
   - Now we use [@promisepending/logger.js](https://www.npmjs.com/package/@promisepending/logger.js) and no longer provide a custom logger.
@@ -111,7 +126,7 @@ This release includes a lot of changes and improvements, so check the changelog 
 
 - [CHORE] Updated dependencies
 
-# v1.0.0-ALPHA.2
+## v1.0.0-ALPHA.2
 
 - [NEW] Implemented secure mode
 
@@ -127,7 +142,7 @@ This release includes a lot of changes and improvements, so check the changelog 
 
 - [CHORE] Updated dependencies
 
-# v1.0.0-ALPHA.1
+## v1.0.0-ALPHA.1
 
 - [FIXED] Some type errors
 
@@ -139,6 +154,6 @@ This release includes a lot of changes and improvements, so check the changelog 
 
 - [CHORE] Updated dependencies
 
-# v1.0.0-ALPHA.0
+## v1.0.0-ALPHA.0
 
 - [NEW] Initial release

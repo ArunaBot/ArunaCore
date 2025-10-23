@@ -1,9 +1,9 @@
 import { IMessage, IWebsocketOptions } from '../interfaces';
 import { Logger } from '@promisepending/logger.js';
+import { version } from '../resources/version';
 import { WebSocketParser, utils } from '../';
 import { EventEmitter } from 'events';
 import ws from 'ws';
-
 
 interface ArunaEvents {
   'ready': [];
@@ -14,7 +14,6 @@ interface ArunaEvents {
   'finish': [];
   [command: string]: [...any];
 }
-
 
 /**
  * Main class for the api client
@@ -42,7 +41,6 @@ interface ArunaEvents {
 export class ArunaClient extends EventEmitter<ArunaEvents> {
   private finishTimeout: ReturnType<typeof setTimeout> | null = null;
   private secureKey: string | null = null;
-  private isRegistered = false;
   private ws: ws | null = null;
   private secureMode: boolean;
   private shardMode: boolean;
@@ -80,8 +78,14 @@ export class ArunaClient extends EventEmitter<ArunaEvents> {
       this.secureKey = secureKey;
       this.secureMode = true;
     }
+    this.ws = new ws(`ws://${this.host}:${this.port}`, {
+      headers: {
+        'Authorization': this.secureKey ?? '',
+        'ArunaCore-API-Version': version,
+        'Client-ID': this.id,
+      },
+    });
 
-    this.ws = new ws(`ws://${this.host}:${this.port}`);
     return new Promise((resolve, reject) => {
       this.ws!.on('message', (message) => { this.onMessage(message.toString()); });
 
@@ -91,14 +95,37 @@ export class ArunaClient extends EventEmitter<ArunaEvents> {
 
       this.ws!.on('open', () => {
         this.logger.debug('Connected to server!');
-        this.logger.debug('Registering client...');
-        this.register();
+        this.emit('ready');
         resolve();
       });
 
       this.ws!.on('error', (err) => {
         this.logger.error(err);
         reject(err);
+      });
+
+      this.ws!.on('unexpected-response', (req, res) => {
+        if (res.statusCode === 401) {
+          this.logger.error('Unauthorized: Invalid secure key!');
+          this.ws?.close();
+          reject(new Error('Unauthorized: Invalid secure key!'));
+        } else if (res.statusCode === 409) {
+          this.logger.warn('Conflict: Client ID already connected! Randomizing a new one...');
+          this.id = this.id + utils.randomString(5);
+          this.connect().then(() => {
+            resolve();
+          }).catch((err) => {
+            reject(err);
+          });
+        } else if (res.statusCode === 412) {
+          this.logger.error('Precondition Failed: Unsupported API version!');
+          this.ws?.close();
+          reject(new Error('Precondition Failed: Unsupported API version!'));
+        } else {
+          this.logger.error(`Unexpected response: ${res.statusCode}`);
+          this.ws?.close();
+          reject(new Error(`Unexpected response: ${res.statusCode}`));
+        }
       });
     });
   }
@@ -163,12 +190,7 @@ export class ArunaClient extends EventEmitter<ArunaEvents> {
 
     switch (parsedMessage.command) {
       case '000':
-        if (parsedMessage.content === 'register-success') {
-          this.isRegistered = true;
-          this.logger.debug('Client Registered!');
-          this.emit('ready');
-        } else if (parsedMessage.content === 'unregister-success') {
-          this.isRegistered = false;
+        if (parsedMessage.content === 'unregister-success') {
           this.logger.debug('Client Unregistered!');
           this.emit('finish');
         } else {
@@ -178,26 +200,11 @@ export class ArunaClient extends EventEmitter<ArunaEvents> {
       case '401':
         this.emit('unauthorized', parsedMessage);
         break;
-      case '403':
-        if (parsedMessage.type !== 'register') return;
-        this.id = this.id + utils.randomString(5);
-        this.register();
-        break;
       default:
         this.emit('message', parsedMessage);
         if (parsedMessage.command) this.emit(parsedMessage.command, parsedMessage);
         break;
     }
-  }
-
-  /**
-   * Registers the client in the ArunaCore server
-   * @returns {void}
-   * @private
-   */
-  private register(): void {
-    if (this.isRegistered) return;
-    this.send('request-register', { command: '000', type: 'register' });
   }
 
   /**
@@ -228,14 +235,6 @@ export class ArunaClient extends EventEmitter<ArunaEvents> {
    */
   public getID(): string {
     return this.id;
-  }
-
-  /**
-   * Indicates if the client is registered in the ArunaCore server
-   * @returns {boolean}
-   */
-  public getIsRegistered(): boolean {
-    return this.isRegistered;
   }
 
   /**
