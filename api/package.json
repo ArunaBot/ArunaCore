@@ -31,7 +31,7 @@
   ],
   "homepage": "https://github.com/ArunaBot/ArunaCore#readme",
   "engines": {
-    "node": ">=18.8.0"
+    "node": ">=20.11.1"
   },
   "dependencies": {
     "@promisepending/logger.js": "^1.1.1",

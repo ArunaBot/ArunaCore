@@ -2,6 +2,9 @@
 
 ## v1.0.0-BETA.4
 
+  - [BREAKING] Dropped support for all versions below Node.js v20.11.1  
+    - While the api may still work on older versions, the app itself can't run on them anymore due to internal fs changes.
+
   - [BREAKING] Application register flow changed
     - New websocket connections now register on the upgrade request, not after the connection is established.
     - This simplifies the connection process and improves performance.
