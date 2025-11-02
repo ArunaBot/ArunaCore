@@ -1,6 +1,6 @@
 {
   "name": "arunacore-api",
-  "version": "1.0.0-BETA.3",
+  "version": "1.0.0-BETA.4",
   "description": "ArunaCore is an open source websocket server made with nodejs for intercomunication between applications.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -10,6 +10,7 @@
   "scripts": {
     "start": "npm run build && node build/",
     "build": "npx tsc -p .",
+    "postbuild": "node ./scripts/postBuild.cjs",
     "prepack": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -30,15 +31,15 @@
   ],
   "homepage": "https://github.com/ArunaBot/ArunaCore#readme",
   "engines": {
-    "node": ">=18.8.0"
+    "node": ">=20.11.1"
   },
   "dependencies": {
     "@promisepending/logger.js": "^1.1.1",
-    "ws": "^8.18.2"
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@types/ws": "^8.18.1",
     "ts-project-bundle": "^0.0.12",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.3"
   }
 }

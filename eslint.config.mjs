@@ -15,7 +15,7 @@ const compat = new FlatCompat({
 });
 
 export default [{
-  ignores: ['build/**/*', 'src/scripts/**/*', 'dist/**/*', 'out/**/*', 'eslint.config.mjs'],
+  ignores: ['**/build/**/*', '**/scripts/**/*', 'dist/**/*', 'out/**/*', 'eslint.config.mjs'],
 }, ...compat.extends(
   'eslint:recommended',
   'plugin:@typescript-eslint/eslint-recommended',

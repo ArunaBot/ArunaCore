@@ -39,7 +39,7 @@ const packageJson = require('../../package.json');
 
 packageJson.main = 'arunacore/src/main/start.js';
 packageJson.scripts = {
-  start: 'node --loader=./arunacore/src/main/loader.js arunacore/src/main/start.js',
+  start: 'node --import=./arunacore/src/main/registerLoader.js arunacore/src/main/start.js',
 };
 
 fs.writeFileSync(path.resolve(rootPath, 'package.json'), JSON.stringify(packageJson, null, 2));

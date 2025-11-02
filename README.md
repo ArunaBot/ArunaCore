@@ -82,7 +82,7 @@ If you want to contribute to ArunaCore, please check our CONTRIBUTING.md file (*
 
 ## Authors
 
-ArunaCore is developed with 💜 by <a href="https://github.com/LoboMetalurgico">Lobo Metalurgico</a> and <a href="https://github.com/emanuelfranklyn">Space_Interprise</a>.
+ArunaCore is developed with 💜 by <a href="https://github.com/LoboMetalurgico">Lobo Metalurgico</a> and <a href="https://github.com/SpaceFox1">SpaceFox</a>.
 
 ## License
 
