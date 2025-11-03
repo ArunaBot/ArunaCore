@@ -107,7 +107,7 @@ export class Socket extends EventEmitter {
         id: appId,
         isAlive: true,
         connection: client,
-        apiVersion: apiVersion, // TODO: Create a good way to check if the client is using a supported api version
+        apiVersion: apiVersion,
         isSecure: !!userToken,
         secureKey: userToken,
         isSharded: false, // TODO: Implement sharding

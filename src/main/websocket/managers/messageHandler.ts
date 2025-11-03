@@ -29,13 +29,8 @@ export class MessageHandler {
 
     const fromConnection = this.connectionManager.getConnection(message.from.id);
 
-    if (!fromConnection && message.type === 'register') {
-      connection.close(1000, this.internalFormatToString('deprecated-register-method', { command: '410', target: { id: message.from.id }, type: 'disconnect' }));
-      return;
-    }
-
     if (!fromConnection) {
-      connection.send(this.internalFormatToString('unprocessable-entity', { command: '422', target: { id: message.from.id }, type: 'register' }));
+      connection.close(1000, this.internalFormatToString('unauthorized', { command: '401', target: { id: message.from.id }, type: 'disconnect' }));
       return;
     }
 
@@ -67,7 +62,7 @@ export class MessageHandler {
     }
 
     if (targetConnection.getIsSecure() && targetConnection.getSecureKey() !== message.target?.key) {
-      connection.send(this.internalFormatToString('unauthorized', { command: '401', target: { id: message.from.id } }));
+      connection.send(this.internalFormatToString('forbidden', { command: '403', target: { id: message.from.id } }));
       return;
     }
 
@@ -75,7 +70,6 @@ export class MessageHandler {
 
     if (message.from.key) delete message.from.key;
     if (message.target?.key) delete message.target.key;
-    if (message.coreKey) delete message.coreKey;
 
     targetConnection.send(message);
   }
@@ -98,8 +92,8 @@ export class MessageHandler {
           connection.send(this.internalFormatToString('service-unavaliable', { command: '503', target: { id: message.from.id }, type: 'unavaliable' }));
           break;
         }
-        if (this.masterKey !== message.coreKey) {
-          connection.send(this.internalFormatToString('unauthorized', { command: '401', target: { id: message.from.id } }));
+        if (this.masterKey !== message.content) {
+          connection.send(this.internalFormatToString('forbidden', { command: '403', target: { id: message.from.id } }));
           break;
         }
         var ids: string[] = Array.from(this.connectionManager.getAliveConnections().keys());
@@ -118,14 +112,12 @@ export class MessageHandler {
       (
         this.masterKey &&
         (
-          message.coreKey ||
           (
-            (
-              typeof message.content === 'string' ||
-              typeof message.content === typeof Array
-            ) &&
-            message.content.includes(this.masterKey)
-          ) ||
+            typeof message.content === 'string' ||
+            typeof message.content === typeof Array
+          ) &&
+          (message.content as (string | Array<string>)).includes(this.masterKey)
+          ||
           message.args?.includes(this.masterKey)
         )
       )

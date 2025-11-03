@@ -43,4 +43,13 @@ export class WebSocketParser {
   public static formatToString(from: { id: string, key?: string }, content: any, { type, command, target, args }: { type?: string, command?: string, target?: { id: string, key?: string }, args?: string[] }): string {
     return JSON.stringify(this.format(from, content, { type, command, target, args }));
   }
+
+  /**
+   * @private
+   */
+  public static formatToStringWithUUID(from: { id: string, key?: string }, uuid: string, content: any, { type, command, target, args }: { type?: string, command?: string, target?: { id: string, key?: string }, args?: string[] }): string {
+    const message = this.format(from, content, { type, command, target, args });
+    Object.assign(message, { uuid });
+    return JSON.stringify(message);
+  }
 }

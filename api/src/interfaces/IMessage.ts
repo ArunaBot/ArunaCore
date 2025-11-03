@@ -8,8 +8,9 @@ export interface IMessage {
     id: string,
     key?: string
   },
-  coreKey?: string,
+  uuid?: string,
   command?: string,
   args?: string[],
-  content: any
+  content: unknown
+  reply?: (content: unknown, options?: { args?: string[], toKey?: string }) => Promise<void>;
 }
