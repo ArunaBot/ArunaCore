@@ -29,13 +29,8 @@ export class MessageHandler {
 
     const fromConnection = this.connectionManager.getConnection(message.from.id);
 
-    if (!fromConnection && message.type === 'register') {
-      connection.close(1000, this.internalFormatToString('deprecated-register-method', { command: '410', target: { id: message.from.id }, type: 'disconnect' }));
-      return;
-    }
-
     if (!fromConnection) {
-      connection.send(this.internalFormatToString('unprocessable-entity', { command: '422', target: { id: message.from.id }, type: 'register' }));
+      connection.close(1000, this.internalFormatToString('unauthorized', { command: '401', target: { id: message.from.id }, type: 'disconnect' }));
       return;
     }
 
@@ -67,7 +62,7 @@ export class MessageHandler {
     }
 
     if (targetConnection.getIsSecure() && targetConnection.getSecureKey() !== message.target?.key) {
-      connection.send(this.internalFormatToString('unauthorized', { command: '401', target: { id: message.from.id } }));
+      connection.send(this.internalFormatToString('forbidden', { command: '403', target: { id: message.from.id } }));
       return;
     }
 
@@ -98,7 +93,7 @@ export class MessageHandler {
           break;
         }
         if (this.masterKey !== message.content) {
-          connection.send(this.internalFormatToString('unauthorized', { command: '401', target: { id: message.from.id } }));
+          connection.send(this.internalFormatToString('forbidden', { command: '403', target: { id: message.from.id } }));
           break;
         }
         var ids: string[] = Array.from(this.connectionManager.getAliveConnections().keys());

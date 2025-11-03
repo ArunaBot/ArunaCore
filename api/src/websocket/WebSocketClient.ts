@@ -348,6 +348,9 @@ export class ArunaClient extends EventEmitter<ArunaEvents> {
       case '401':
         this.emit('unauthorized', parsedMessage);
         break;
+      case '403':
+        this.emit('forbidden', parsedMessage);
+        break;
       default:
         this.emit('message', parsedMessage);
         if (parsedMessage.command) this.emit(parsedMessage.command, parsedMessage);

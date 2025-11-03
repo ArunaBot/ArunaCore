@@ -11,8 +11,8 @@ async function sendMessage3Test({ loggerClient, client, client2 }: ITestOptions)
       clearTimeout(timeout);
       return reject(new Error('Message 3 Received'));
     });
-    client.once('unauthorized', () => {
-      loggerClient.info('Client 1 Unauthorized as intended');
+    client.once('forbidden', () => {
+      loggerClient.info('Client 1 Forbidden as intended');
       clearTimeout(timeout);
       return resolve();
     });
