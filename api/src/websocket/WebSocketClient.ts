@@ -16,27 +16,33 @@ interface ArunaEvents {
 }
 
 /**
- * Main class for the api client
- * @class ArunaClient
- * @extends {EventEmitter}
+ * The main WebSocket client for connecting to an ArunaCore server.
+ * Handles connection, authentication, messaging, and event management.
+ *
+ * @remarks
+ * This client supports secure and shard modes, emits events for connection lifecycle and message handling,
+ * and provides methods for sending messages, pinging, and closing the connection.
+ *
+ * @extends EventEmitter
+ *
  * @example
- * const { ArunaClient } = require('aruna-api');
+ * import { ArunaClient } from 'aruna-api';
  * const client = new ArunaClient({
- *  host: 'localhost',
- *  port: 3000,
- *  secureMode: false,
- *  shardMode: false,
- *  secureKey: null,
- *  logger: null,
- *  id: 'client'
+ *   host: 'localhost',
+ *   port: 3000,
+ *   secureMode: false,
+ *   shardMode: false,
+ *   secureKey: null,
+ *   logger: null,
+ *   id: 'client'
  * });
  * client.on('ready', () => {
- *  console.log('Client is ready!');
+ *   console.log('Client is ready!');
  * });
  * client.on('message', (message) => {
- *  console.log(message);
+ *   console.log(message);
  * });
- * client.connect(); // optional: secureKey
+ * await client.connect(); // Optionally pass secureKey
  */
 export class ArunaClient extends EventEmitter<ArunaEvents> {
   private finishTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -69,15 +75,18 @@ export class ArunaClient extends EventEmitter<ArunaEvents> {
   }
 
   /**
-   * Connects to the ArunaCore server
-   * @param {string?} [secureKey] Secure key for secure mode
-   * @returns {Promise<void>}
+   * Establishes a WebSocket connection to the ArunaCore server.
+   *
+   * @param {string?} [secureKey] Optional secure key for authentication in secure mode. If provided, enables secure mode.
+   * @returns {Promise<void>} Promise that resolves when the connection is established, or rejects on error.
+   * @throws Error if secure mode is enabled but no secure key is provided, or if shard mode is enabled without secure mode.
    */
   public async connect(secureKey?: string): Promise<void> {
     if (secureKey) {
       this.secureKey = secureKey;
       this.secureMode = true;
     }
+    
     this.ws = new ws(`ws://${this.host}:${this.port}`, {
       headers: {
         'Authorization': this.secureKey ?? '',
@@ -96,12 +105,12 @@ export class ArunaClient extends EventEmitter<ArunaEvents> {
       this.ws!.on('open', () => {
         this.logger.debug('Connected to server!');
         this.emit('ready');
-        resolve();
+        return resolve();
       });
 
       this.ws!.on('error', (err) => {
         this.logger.error(err);
-        reject(err);
+        return reject(err);
       });
 
       this.ws!.on('unexpected-response', (req, res) => {
@@ -113,18 +122,18 @@ export class ArunaClient extends EventEmitter<ArunaEvents> {
           this.logger.warn('Conflict: Client ID already connected! Randomizing a new one...');
           this.id = this.id + utils.randomString(5);
           this.connect().then(() => {
-            resolve();
+            return resolve();
           }).catch((err) => {
             reject(err);
           });
         } else if (res.statusCode === 412) {
           this.logger.error('Precondition Failed: Unsupported API version!');
           this.ws?.close();
-          reject(new Error('Precondition Failed: Unsupported API version!'));
+          return reject(new Error('Precondition Failed: Unsupported API version!'));
         } else {
           this.logger.error(`Unexpected response: ${res.statusCode}`);
           this.ws?.close();
-          reject(new Error(`Unexpected response: ${res.statusCode}`));
+          return reject(new Error(`Unexpected response: ${res.statusCode}`));
         }
       });
     });
@@ -132,15 +141,15 @@ export class ArunaClient extends EventEmitter<ArunaEvents> {
 
   /**
    * Sends a message to the ArunaCore server.
-   * 
-   * @param {any} content - Content of the message, can be a string or a serializable object.
-   * @param {Object} options - Options for the message.
-   * @param {string} [options.type] - Type of the client or message.
-   * @param {string} [options.command] - Command code for the message.
-   * @param {{ id: string, key?: string }} [options.target] - Target of the message (id and optional key).
-   * @param {string[]} [options.args] - Arguments of the message.
-   * @returns {Promise<void>} Resolves when the message is sent.
-   * 
+   *
+   * @param {unknown} content The message content, can be a string or a serializable object.
+   * @param {Object} options Message options.
+   * @param {string} [options.type] Type of the client or message.
+   * @param {string} [options.command] Command code for the message.
+   * @param {{ id: string, key?: string }} [options.target] Target recipient (id and optional key).
+   * @param {string[]} [options.args] Arguments for the message.
+   * @returns {Promise<void>} Promise that resolves when the message is sent, or rejects if the connection is not open or secure key is missing in secure mode.
+   *
    * @example
    * await client.send('100', {
    *   args: ['Hello World!'],
@@ -149,7 +158,7 @@ export class ArunaClient extends EventEmitter<ArunaEvents> {
    *   command: 'someCommand'
    * });
    */
-  public async send(content: any, { type, command, target, args }: { type?: string, command?: string, target?: { id: string, key?: string }, args?: string[] }): Promise<void> {
+  public async send(content: unknown, { type, command, target, args }: { type?: string, command?: string, target?: { id: string, key?: string }, args?: string[] }): Promise<void> {
     return new Promise((resolve, reject) => {
       if (this.ws?.readyState !== ws.OPEN) return reject(new Error('Connection is not open!'));
 
@@ -172,9 +181,10 @@ export class ArunaClient extends EventEmitter<ArunaEvents> {
   }
 
   /**
-   * Called when a message is received from the ArunaCore server
-   * Responsable for parsing the message and emitting the events
-   * @param {string} message Message received
+   * Handles incoming messages from the ArunaCore server.
+   * Parses the message and emits the appropriate events.
+   *
+   * @param {string} message The raw message string received from the server.
    * @returns {void}
    * @private
    */
@@ -208,12 +218,13 @@ export class ArunaClient extends EventEmitter<ArunaEvents> {
   }
 
   /**
-   * Pings the ArunaCore server
-   * @returns {Promise<boolean>}
+   * Sends a ping frame to the ArunaCore server to check connectivity.
+   *
+   * @returns {Promise<boolean>} Promise that resolves to true if the ping succeeds, or rejects on error.
+   *
    * @example
-   * client.ping().then(() => {
-   *  console.log('Pong!');
-   * });
+   * await client.ping();
+   * // => Pong!
    */
   public async ping(): Promise<boolean> {
     return new Promise((resolve, reject) => {
@@ -230,20 +241,23 @@ export class ArunaClient extends EventEmitter<ArunaEvents> {
   }
 
   /**
-   * Returns the client id
-   * @returns {string}
+   * Gets the current client ID.
+   *
+   * @returns {string} The client ID string.
    */
   public getID(): string {
     return this.id;
   }
 
   /**
-   * Closes the connection to the ArunaCore server
-   * @returns {Promise<void>}
+   * Gracefully closes the connection to the ArunaCore server.
+   * Sends an unregister request and waits for confirmation or times out after 5 seconds.
+   *
+   * @returns {Promise<void>} Promise that resolves when the connection is closed.
+   *
    * @example
-   * client.finish().then(() => {
-   *  console.log('Connection closed!');
-   * });
+   * await client.finish();
+   * // => Connection closed!
    */
   public async finish(): Promise<void> {
     return new Promise(async (resolve) => {
