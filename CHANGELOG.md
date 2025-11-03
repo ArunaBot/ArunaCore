@@ -1,6 +1,10 @@
 # ArunaCore Changelog
 
 ## v1.0.0-BETA.5
+
+  - [FIX] Wrong management of `coreKey`
+    - Fixed an issue where the `coreKey` was handled incorrectly, causing it to be always null, resulting in clients being unable to access restricted resources.
+
   - [FEAT] Split `401 Unauthorized` into `401 Unauthorized` and `403 Forbidden`  
     - Now, `401` is used when authentication fails (e.g., invalid secure key), while `403` is used when access is denied despite valid authentication (e.g., insufficient permissions, invalid key for specific target communication, invalid masterkey, etc.). 
     - This provides clearer feedback to clients about the nature of access issues.
