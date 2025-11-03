@@ -8,8 +8,7 @@ export interface IMessage {
     id: string,
     key?: string
   },
-  coreKey?: string,
   command?: string,
   args?: string[],
-  content: any
+  content: unknown
 }

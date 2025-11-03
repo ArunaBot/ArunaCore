@@ -75,7 +75,6 @@ export class MessageHandler {
 
     if (message.from.key) delete message.from.key;
     if (message.target?.key) delete message.target.key;
-    if (message.coreKey) delete message.coreKey;
 
     targetConnection.send(message);
   }
@@ -98,7 +97,7 @@ export class MessageHandler {
           connection.send(this.internalFormatToString('service-unavaliable', { command: '503', target: { id: message.from.id }, type: 'unavaliable' }));
           break;
         }
-        if (this.masterKey !== message.coreKey) {
+        if (this.masterKey !== message.content) {
           connection.send(this.internalFormatToString('unauthorized', { command: '401', target: { id: message.from.id } }));
           break;
         }
@@ -118,14 +117,12 @@ export class MessageHandler {
       (
         this.masterKey &&
         (
-          message.coreKey ||
           (
-            (
-              typeof message.content === 'string' ||
-              typeof message.content === typeof Array
-            ) &&
-            message.content.includes(this.masterKey)
-          ) ||
+            typeof message.content === 'string' ||
+            typeof message.content === typeof Array
+          ) &&
+          (message.content as (string | Array<string>)).includes(this.masterKey)
+          ||
           message.args?.includes(this.masterKey)
         )
       )
