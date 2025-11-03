@@ -1,5 +1,17 @@
 # ArunaCore Changelog
 
+## v1.0.0-BETA.5
+  - [FEAT] Split `401 Unauthorized` into `401 Unauthorized` and `403 Forbidden`  
+    - Now, `401` is used when authentication fails (e.g., invalid secure key), while `403` is used when access is denied despite valid authentication (e.g., insufficient permissions, invalid key for specific target communication, invalid masterkey, etc.). 
+    - This provides clearer feedback to clients about the nature of access issues.
+
+  - [FEAT] Implemented `client.request()` method in `WebSocketClient`  
+    - This method allows sending a message and awaiting a response, simplifying request-response interactions.
+    - To use it, simply call `client.request(message)` and await the returned promise.
+    - To respond to such request on the other side, handle the `request` event and reply using `message.reply`.
+
+  - [CHORE] Improved code documentation and comments for better clarity and maintainability.
+
 ## v1.0.0-BETA.4
 
   - [BREAKING] Dropped support for all versions below Node.js v20.11.1  
