@@ -1,6 +1,5 @@
+import { IConnection, IMessage } from '../../interfaces';
 import { Logger } from '@promisepending/logger.js';
-import { IMessage } from '../../../../api/src';
-import { IConnection } from '../../interfaces';
 import * as WS from 'ws';
 
 export class ConnectionStructure {

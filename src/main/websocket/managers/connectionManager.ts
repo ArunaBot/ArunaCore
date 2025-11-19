@@ -1,6 +1,6 @@
-import { WebSocketParser } from '../../../../api/src';
 import { ConnectionStructure } from '../structures';
 import { Logger } from '@promisepending/logger.js';
+import { format } from '../../utils';
 import { Socket } from '../socket';
 import * as wss from 'ws';
 
@@ -26,7 +26,7 @@ export class ConnectionManager {
   // public async unregisterConnection(connection: ConnectionStructure, message: IMessage): Promise<void> {
   public async unregisterConnection(connection: ConnectionStructure): Promise<void> {
     if (await this.ping(connection)) {
-      connection.send(WebSocketParser.formatToString({ id: 'arunacore' }, 'unregister-success', { command: '000', args: ['goodbye! O/'], target: { id: connection.getID() }, type: 'register' }));
+      connection.send(format('unregister-success', { command: '000', args: ['goodbye! O/'], target: { id: connection.getID() }, type: 'register' }));
       connection.close(1000);
     }
 

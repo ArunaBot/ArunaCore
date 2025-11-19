@@ -1,6 +1,5 @@
 name: Publish Tag and Release
 
-
 on:
   workflow_run:
     workflows: [Test]
@@ -42,7 +41,6 @@ jobs:
           WITH_V: true
           CUSTOM_TAG: "${{ steps.current_version.outputs.version }}"
 
-
   release:
     needs: tag
     name: Publish Release
@@ -52,10 +50,10 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: 22.x
 

@@ -1,3 +1,4 @@
 export * from './IConfiguration';
 export * from './ISocketOptions';
 export * from './IConnection';
+export * from './IMessage';

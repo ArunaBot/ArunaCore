@@ -22,12 +22,12 @@ jobs:
         run: npm ci
 
       - name: Run ESLint
-        run: npm run eslint:fix
+        run: npm run lint
 
       - name: Commit changes
         uses: EndBug/add-and-commit@v4
         with:
           add: .
-          message: "lint: Auto-fix linting errors"
+          message: "chore(lint): Auto-fix linting errors"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

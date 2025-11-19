@@ -2,7 +2,6 @@ import { ConnectionManager, MessageHandler } from './managers';
 import { ConnectionStructure } from './structures';
 import { Logger } from '@promisepending/logger.js';
 import { ISocketOptions } from '../interfaces';
-import { IMessage } from '../../../api/src';
 import { IncomingMessage } from 'http';
 import { EventEmitter } from 'events';
 import { autoLogEnd } from '../utils';
@@ -114,29 +113,6 @@ export class Socket extends EventEmitter {
       }, this.logger);
       this.connectionManager.addConnection(connection);
     });
-  }
-
-  private rawSend(connection: WebSocket, data: any):void {
-    connection.send(data);
-  }
-
-  /**
-   * Sends a message to a client
-   * @param connection the websocket connection
-   * @param from id of the sender
-   * @param command the command
-   * @param args arguments of the command
-   * @param to optional id of the receiver
-   * @param type optional client type
-   * @deprecated Use connection.send() instead
-   */
-  public send(connection: WebSocket, message: IMessage): void {
-    try {
-      connection.send(JSON.stringify(message));
-    } catch (e) {
-      this.logger.warn('An error occurred while trying to send a message to a client:', e);
-      this.logger.warn('The above error probably occurred because of lack of data or invalid data');
-    }
   }
 
   public async finishWebSocket(): Promise<void> {

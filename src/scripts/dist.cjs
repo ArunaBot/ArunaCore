@@ -39,8 +39,10 @@ const packageJson = require('../../package.json');
 
 packageJson.main = 'arunacore/src/main/start.js';
 packageJson.scripts = {
-  start: 'node --import=./arunacore/src/main/registerLoader.js arunacore/src/main/start.js',
+  start: 'node --import=./arunacore/main/registerLoader.js arunacore/main/start.js',
 };
+
+delete packageJson.devDependencies;
 
 fs.writeFileSync(path.resolve(rootPath, 'package.json'), JSON.stringify(packageJson, null, 2));
 
@@ -48,6 +50,6 @@ fs.cpSync(path.resolve(__dirname, '..', '..', 'package-lock.json'), path.resolve
 
 fs.cpSync(src, dest, { recursive: true, force: true, preserveTimestamps: true });
 
-fs.rmSync(path.resolve(rootPath, 'arunacore', 'src', 'tests'), { recursive: true, force: true });
+fs.rmSync(path.resolve(rootPath, 'arunacore', 'tests'), { recursive: true, force: true });
 
 zipDirectory(rootPath, path.resolve(distPath, 'arunacore.zip'));

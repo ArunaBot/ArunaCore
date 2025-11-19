@@ -71,10 +71,6 @@
 		"removeComments": true,
 		"experimentalDecorators": true,
 		"resolveJsonModule": true,
-		"paths": {
-			"arunacore-api": ["./api/src"],
-		},
-		"plugins": [{ "transform": "@zerollup/ts-transform-paths" }],
 		"noEmitHelpers": true,
 		"importHelpers": true
 	}

@@ -1,5 +1,5 @@
 import { ITestResponse, ITestOptions } from '../interfaces';
-import { IMessage, ArunaClient } from '../../../api/src';
+import { ArunaClient, IMessage } from 'arunacore-api';
 
 function runStartupClient3({ loggerClient, index }: ITestOptions): Promise<ITestResponse> {
   return new Promise((resolve, reject) => {
