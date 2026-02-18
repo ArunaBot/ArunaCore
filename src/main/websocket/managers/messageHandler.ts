@@ -19,7 +19,7 @@ export class MessageHandler {
   }
 
   public async onMessage(data: wss.MessageEvent, connection: wss.WebSocket): Promise<void> {
-    var message: IMessage | null = null;
+    let message: IMessage | null = null;
     try {
       message = JSON.parse(data.data.toString());
     } catch {
@@ -28,10 +28,19 @@ export class MessageHandler {
 
     if (message == null) return;
 
-    const fromConnection = this.connectionManager.getConnection(message.from.id);
+    const fromConnection = this.connectionManager.findConnectionBySocket(connection);
 
     if (!fromConnection) {
       connection.close(1000, format('unauthorized', { command: '401', target: { id: message.from.id }, type: 'disconnect' }));
+      return;
+    }
+
+    if (!message.from) {
+      message.from = { id: fromConnection.getID() };
+    }
+
+    if (message.from.id != fromConnection?.getID()) {
+      connection.close(1000, format('forbidden', { command: '403', target: { id: message.from.id }, type: 'disconnect' }));
       return;
     }
 
@@ -84,11 +93,11 @@ export class MessageHandler {
    */
   private async defaultCommandExecutor(connection: ConnectionStructure, message: IMessage): Promise<boolean> {
     const command = message.command;
-    var isInternal = true;
+    let isInternal = true;
 
     switch (command) {
       // Get the list of all current connections alive ids
-      case '015':
+      case '015': {
         if (!this.masterKey) {
           connection.send(format('service-unavaliable', { command: '503', target: { id: message.from.id }, type: 'unavaliable' }));
           break;
@@ -97,9 +106,10 @@ export class MessageHandler {
           connection.send(format('forbidden', { command: '403', target: { id: message.from.id } }));
           break;
         }
-        var ids: string[] = Array.from(this.connectionManager.getAliveConnections().keys());
+        const ids: string[] = Array.from(this.connectionManager.getAliveConnections().keys());
         connection.send(format(ids, { command: '015', target: { id: message.from.id } }));
         break;
+      }
       case '000':
         break;
       default:

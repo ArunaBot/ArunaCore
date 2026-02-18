@@ -104,4 +104,13 @@ export class ConnectionManager {
   public getConnection(id: string): ConnectionStructure | undefined {
     return this.connections.get(id);
   }
+
+  public findConnectionBySocket(socket: wss.WebSocket): ConnectionStructure | undefined {
+    for (const connection of this.connections.values()) {
+      if (connection.getConnection() === socket) {
+        return connection;
+      }
+    }
+    return undefined;
+  }
 }
