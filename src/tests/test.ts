@@ -21,24 +21,24 @@ const loggerServer = new Logger({ debug: true, prefix: 'SERVER' });
 
 loggerServer.info('Logger Initialized');
 
-var testFailed = false;
+let testFailed = false;
 
-var actualCheck = 0;
+let actualCheck = 0;
 
-var checks = 0;
+let checks = 0;
 
 const scriptDir = path.resolve(getDirnameAuto(import.meta.url), 'scripts');
 
 const tests: any[] = [];
 
 async function runTests(): Promise<void> {
-  var server: Socket|null = null;
+  let server: Socket|null = null;
 
-  var client: ArunaClient|null = null; // = new WebSocketClient('localhost', 3000, 'client', loggerClient);
-  var client2: ArunaClient|null = null; // = new WebSocketClient('localhost', 3000, 'client2', loggerClient);
-  var client3: ArunaClient|null = null; // = new WebSocketClient('localhost', 3000, 'client3', loggerClient);
+  let client: ArunaClient|null = null; // = new WebSocketClient('localhost', 3000, 'client', loggerClient);
+  let client2: ArunaClient|null = null; // = new WebSocketClient('localhost', 3000, 'client2', loggerClient);
+  let client3: ArunaClient|null = null; // = new WebSocketClient('localhost', 3000, 'client3', loggerClient);
 
-  for (var i = 0; i <= checks - 1; i++) {
+  for (let i = 0; i <= checks - 1; i++) {
     actualCheck = i + 1;
     logger.info(`Starting test: "${chalk.blueBright(tests[i].name)}" [${actualCheck}/${checks}]`);
 
